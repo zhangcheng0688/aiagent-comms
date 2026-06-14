@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>协商决策 · AI 全权代办</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { --bg: #f7f5f0; --paper: #fff; --ink: #14171e; --ink-2: #3a4256; --muted: #7c7a72; --primary: #2f6f5e; --primary-soft: #e3efea; --line: #e9e3d6; --warn: #b85c00; --warn-soft: #fef3e2; --ok: #5a8b76; --ok-soft: #e3efea; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Outfit', -apple-system, 'PingFang SC', sans-serif; background: var(--bg); color: var(--ink); }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+  .back { display: inline-block; color: var(--muted); text-decoration: none; font-size: 14px; margin-bottom: 16px; }
+  h1 { font-size: 28px; font-weight: 600; margin: 0 0 8px; }
+  .sub { color: var(--ink-2); margin: 0 0 24px; font-size: 15px; }
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
+  .option { border: 2px solid var(--line); border-radius: 10px; padding: 16px; margin: 12px 0; cursor: pointer; transition: all 0.15s; }
+  .option:hover { border-color: var(--primary); background: var(--primary-soft); }
+  .option.selected { border-color: var(--primary); background: var(--primary-soft); }
+  .option-label { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; }
+  .option-key { display: inline-block; width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: #fff; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700; }
+  .option-changes { margin: 10px 0 0 38px; font-size: 14px; color: var(--ink-2); }
+  .price { font-size: 16px; font-weight: 600; margin-left: 8px; }
+  .price.up { color: var(--warn); }
+  .price.same { color: var(--muted); }
+  .submit { display: block; width: 100%; padding: 16px; background: var(--primary); color: #fff; border: 0; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 20px; font-family: inherit; }
+  .submit:hover { filter: brightness(1.1); }
+  .submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .cancel-btn { display: block; width: 100%; padding: 14px; background: transparent; color: var(--err); border: 1px solid var(--line); border-radius: 10px; font-size: 14px; cursor: pointer; margin-top: 12px; font-family: inherit; }
+  .reason { background: var(--warn-soft); border: 1px solid var(--warn); padding: 14px 18px; border-radius: 8px; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a id="backLink" href="#" class="back">← 返回订单</a>
+  <h1>酒店提出新方案</h1>
+  <p class="sub">请选择你的决定，AI 会按你的选择继续沟通</p>
+
+  <div id="container">
+    <div class="card">加载中...</div>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const orderId = params.get('id');
+let selectedOption = null;
+
+async function loadOrder() {
+  if (!orderId) {
+    document.getElementById('container').innerHTML = '<div class="card">请提供订单 ID</div>';
+    return;
+  }
+  document.getElementById('backLink').href = '/order/' + orderId;
+  try {
+    const resp = await fetch(`/api/orders/${orderId}`);
+    const order = await resp.json();
+    renderNegotiation(order);
+  } catch (err) {
+    document.getElementById('container').innerHTML = `<div class="card">加载失败: ${err.message}</div>`;
+  }
+}
+
+function renderNegotiation(o) {
+  if (o.status !== 'needs_user') {
+    document.getElementById('container').innerHTML = `
+      <div class="card">
+        <h3>该订单已无需决策</h3>
+        <p>当前状态：${o.status}</p>
+        <a href="/order/${o.id}" class="submit" style="text-align:center;text-decoration:none;display:inline-block;width:auto;padding:10px 24px">查看订单详情</a>
+      </div>`;
+    return;
+  }
+
+  const proposal = (o.result || {}).proposal || {};
+  const options = proposal.options || [];
+
+  let html = `
+    <div class="card reason">
+      <strong>升级原因：</strong>${(o.result || {}).reason || '商家提出新方案'}
+    </div>
+
+    <div class="card">
+      <h3>商家提出的备选方案</h3>
+      <p>${proposal.summary || ''}</p>
+      ${options.map(opt => `
+        <div class="option" data-id="${opt.option_id}" onclick="selectOption('${opt.option_id}')">
+          <div class="option-label">
+            <span class="option-key">${opt.option_id}</span>
+            <span>${opt.label}</span>
+            <span class="price ${opt.price_change.startsWith('+') ? 'up' : 'same'}">${opt.price_change}</span>
+          </div>
+          <div class="option-changes">
+            ${(opt.key_changes || []).map(c => '· ' + c).join('<br>')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <button class="submit" id="submitBtn" disabled onclick="submitChoice()">确认选择并继续</button>
+    <button class="cancel-btn" onclick="abortOrder()">放弃这次代办</button>
+  `;
+  document.getElementById('container').innerHTML = html;
+}
+
+window.selectOption = function(id) {
+  selectedOption = id;
+  document.querySelectorAll('.option').forEach(el => el.classList.remove('selected'));
+  document.querySelector(`.option[data-id="${id}"]`).classList.add('selected');
+  document.getElementById('submitBtn').disabled = false;
+};
+
+async function submitChoice() {
+  if (!selectedOption) return;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '提交中...';
+  try {
+    const resp = await fetch(`/api/orders/${orderId}/resolve-proposal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ choice: selectedOption })
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+    location.href = '/order/' + orderId;
+  } catch (err) {
+    alert('提交失败: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = '确认选择并继续';
+  }
+}
+
+async function abortOrder() {
+  if (!confirm('确认放弃这次代办？')) return;
+  try {
+    await fetch(`/api/orders/${orderId}/resolve-proposal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ choice: 'abort' })
+    });
+    location.href = '/order/' + orderId;
+  } catch (err) {
+    alert('操作失败: ' + err.message);
+  }
+}
+
+loadOrder();
+</script>
+</body>
+</html>

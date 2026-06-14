@@ -1,0 +1,172 @@
+{
+  "version": "V3.0",
+  "industries": [
+    "cable",
+    "machinery",
+    "textile",
+    "logistics"
+  ],
+  "scenarios": [
+    "sample_confirm",
+    "order_modify",
+    "reconciliation",
+    "price_negotiation",
+    "claim_dispute"
+  ],
+  "scenario_labels": {
+    "sample_confirm": "样品确认",
+    "order_modify": "订单变更",
+    "reconciliation": "对账",
+    "price_negotiation": "议价",
+    "claim_dispute": "索赔/纠纷"
+  },
+  "industry_labels": {
+    "cable": "线缆",
+    "machinery": "机械",
+    "textile": "纺织",
+    "logistics": "物流"
+  },
+  "total_combinations": 20,
+  "matrix": [
+    {
+      "industry": "cable",
+      "industry_label": "线缆",
+      "scenario": "sample_confirm",
+      "scenario_label": "样品确认",
+      "scenario_desc": "寄样地址/快递单/样品规格/运费承担"
+    },
+    {
+      "industry": "cable",
+      "industry_label": "线缆",
+      "scenario": "order_modify",
+      "scenario_label": "订单变更",
+      "scenario_desc": "改交期/改地址/改数量/分批"
+    },
+    {
+      "industry": "cable",
+      "industry_label": "线缆",
+      "scenario": "reconciliation",
+      "scenario_label": "对账",
+      "scenario_desc": "对账单/付款水单/汇率/抹零争议"
+    },
+    {
+      "industry": "cable",
+      "industry_label": "线缆",
+      "scenario": "price_negotiation",
+      "scenario_label": "议价",
+      "scenario_desc": "还价/折扣/批量优惠/账期"
+    },
+    {
+      "industry": "cable",
+      "industry_label": "线缆",
+      "scenario": "claim_dispute",
+      "scenario_label": "索赔/纠纷",
+      "scenario_desc": "质量异议/延期罚则/INCOTERM 变更"
+    },
+    {
+      "industry": "machinery",
+      "industry_label": "机械",
+      "scenario": "sample_confirm",
+      "scenario_label": "样品确认",
+      "scenario_desc": "寄样地址/快递单/样品规格/运费承担"
+    },
+    {
+      "industry": "machinery",
+      "industry_label": "机械",
+      "scenario": "order_modify",
+      "scenario_label": "订单变更",
+      "scenario_desc": "改交期/改地址/改数量/分批"
+    },
+    {
+      "industry": "machinery",
+      "industry_label": "机械",
+      "scenario": "reconciliation",
+      "scenario_label": "对账",
+      "scenario_desc": "对账单/付款水单/汇率/抹零争议"
+    },
+    {
+      "industry": "machinery",
+      "industry_label": "机械",
+      "scenario": "price_negotiation",
+      "scenario_label": "议价",
+      "scenario_desc": "还价/折扣/批量优惠/账期"
+    },
+    {
+      "industry": "machinery",
+      "industry_label": "机械",
+      "scenario": "claim_dispute",
+      "scenario_label": "索赔/纠纷",
+      "scenario_desc": "质量异议/延期罚则/INCOTERM 变更"
+    },
+    {
+      "industry": "textile",
+      "industry_label": "纺织",
+      "scenario": "sample_confirm",
+      "scenario_label": "样品确认",
+      "scenario_desc": "寄样地址/快递单/样品规格/运费承担"
+    },
+    {
+      "industry": "textile",
+      "industry_label": "纺织",
+      "scenario": "order_modify",
+      "scenario_label": "订单变更",
+      "scenario_desc": "改交期/改地址/改数量/分批"
+    },
+    {
+      "industry": "textile",
+      "industry_label": "纺织",
+      "scenario": "reconciliation",
+      "scenario_label": "对账",
+      "scenario_desc": "对账单/付款水单/汇率/抹零争议"
+    },
+    {
+      "industry": "textile",
+      "industry_label": "纺织",
+      "scenario": "price_negotiation",
+      "scenario_label": "议价",
+      "scenario_desc": "还价/折扣/批量优惠/账期"
+    },
+    {
+      "industry": "textile",
+      "industry_label": "纺织",
+      "scenario": "claim_dispute",
+      "scenario_label": "索赔/纠纷",
+      "scenario_desc": "质量异议/延期罚则/INCOTERM 变更"
+    },
+    {
+      "industry": "logistics",
+      "industry_label": "物流",
+      "scenario": "sample_confirm",
+      "scenario_label": "样品确认",
+      "scenario_desc": "寄样地址/快递单/样品规格/运费承担"
+    },
+    {
+      "industry": "logistics",
+      "industry_label": "物流",
+      "scenario": "order_modify",
+      "scenario_label": "订单变更",
+      "scenario_desc": "改交期/改地址/改数量/分批"
+    },
+    {
+      "industry": "logistics",
+      "industry_label": "物流",
+      "scenario": "reconciliation",
+      "scenario_label": "对账",
+      "scenario_desc": "对账单/付款水单/汇率/抹零争议"
+    },
+    {
+      "industry": "logistics",
+      "industry_label": "物流",
+      "scenario": "price_negotiation",
+      "scenario_label": "议价",
+      "scenario_desc": "还价/折扣/批量优惠/账期"
+    },
+    {
+      "industry": "logistics",
+      "industry_label": "物流",
+      "scenario": "claim_dispute",
+      "scenario_label": "索赔/纠纷",
+      "scenario_desc": "质量异议/延期罚则/INCOTERM 变更"
+    }
+  ]
+}

@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>运营后台 · AI 全权代办</title>
+<style>
+  :root {
+    --bg: #0b0d12; --panel: #14181f; --panel-2: #1c2230; --line: #2a3142;
+    --text: #e6ebf3; --muted: #8a93a6;
+    --accent: #4f8cff; --accent-2: #7c5cff;
+    --ok: #2fd47e; --warn: #f5a524; --err: #ff5872;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font: 14px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text);
+  }
+  .topbar {
+    display: flex; align-items: center; gap: 18px;
+    padding: 14px 24px; border-bottom: 1px solid var(--line);
+    background: var(--panel);
+  }
+  .topbar .logo {
+    font-weight: 600; font-size: 16px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .topbar .fill { flex: 1; }
+  .topbar input {
+    width: 280px; padding: 6px 12px; background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 6px; color: var(--text);
+    font-size: 13px;
+  }
+  .topbar .user {
+    color: var(--muted); font-size: 12px; display: flex; gap: 12px; align-items: center;
+  }
+  .topbar .user .name { color: var(--text); font-weight: 500; }
+  .topbar .logout {
+    background: transparent; border: 1px solid var(--line); color: var(--muted);
+    padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;
+  }
+  .layout { display: grid; grid-template-columns: 1fr 360px; height: calc(100vh - 53px); }
+  main { overflow-y: auto; }
+  aside.metrics { background: var(--panel); border-left: 1px solid var(--line); overflow-y: auto; padding: 16px 18px; }
+
+  /* Login 覆盖 */
+  .login {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; z-index: 100;
+  }
+  .login .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 32px; width: 380px;
+  }
+  .login h2 { margin: 0 0 8px; font-size: 22px; }
+  .login p { color: var(--muted); margin: 0 0 24px; font-size: 13px; }
+  .login label { display: block; font-size: 12px; color: var(--muted); margin: 14px 0 4px; }
+  .login input {
+    width: 100%; padding: 8px 12px; background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 6px; color: var(--text);
+  }
+  .login button {
+    margin-top: 18px; width: 100%; padding: 10px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border: 0; color: white; border-radius: 6px; cursor: pointer;
+    font-weight: 500;
+  }
+  .login .toggle { text-align: center; margin-top: 14px; font-size: 12px; color: var(--muted); cursor: pointer; }
+  .login .error { color: var(--err); font-size: 12px; margin-top: 8px; }
+
+  /* 订单列表 */
+  .filters {
+    display: flex; gap: 12px; padding: 14px 24px;
+    border-bottom: 1px solid var(--line); background: var(--panel);
+  }
+  .filter-chip {
+    padding: 4px 12px; border-radius: 100px; border: 1px solid var(--line);
+    background: var(--panel-2); color: var(--muted); font-size: 12px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .filter-chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .filter-chip:hover:not(.active) { border-color: var(--accent); color: var(--text); }
+
+  .order-list { padding: 0 24px; }
+  .order-row {
+    display: grid; grid-template-columns: 1.5fr 1fr 1fr 100px 80px 80px;
+    gap: 16px; padding: 14px 16px; margin: 8px 0;
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 8px; cursor: pointer; transition: all 0.15s;
+    align-items: center; font-size: 13px;
+  }
+  .order-row:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .order-row .org { font-weight: 500; }
+  .order-row .req { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .order-row .meta { color: var(--muted); font-size: 12px; }
+  .status-pill {
+    display: inline-block; padding: 2px 10px; border-radius: 4px;
+    font-size: 11px; font-weight: 500;
+  }
+  .status-pill.success { background: rgba(47,212,126,0.15); color: var(--ok); }
+  .status-pill.failed { background: rgba(255,88,114,0.15); color: var(--err); }
+  .status-pill.in_progress { background: rgba(79,140,255,0.15); color: var(--accent); }
+  .status-pill.needs_user { background: rgba(245,165,36,0.15); color: var(--warn); }
+  .status-pill.pending { background: rgba(138,147,166,0.15); color: var(--muted); }
+
+  .score-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;
+  }
+  .score-badge .num { font-size: 14px; }
+  .score-A { background: rgba(47,212,126,0.15); color: var(--ok); }
+  .score-B { background: rgba(79,140,255,0.15); color: var(--accent); }
+  .score-C { background: rgba(245,165,36,0.15); color: var(--warn); }
+  .score-D { background: rgba(255,88,114,0.15); color: var(--err); }
+  .score-na { background: rgba(138,147,166,0.15); color: var(--muted); }
+
+  /* 详情面板 */
+  .empty { color: var(--muted); padding: 60px 20px; text-align: center; }
+  .detail {
+    padding: 20px 24px;
+  }
+  .detail h2 { margin: 0 0 4px; font-size: 18px; }
+  .detail .org { color: var(--muted); margin-bottom: 18px; font-size: 13px; }
+  .detail-section { margin-bottom: 24px; }
+  .detail-section h3 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); margin: 0 0 10px; font-weight: 500;
+  }
+  .kv { display: grid; grid-template-columns: 90px 1fr; gap: 4px 12px; font-size: 13px; }
+  .kv .k { color: var(--muted); }
+
+  /* 雷达图 */
+  .radar-box {
+    background: var(--panel-2); border-radius: 8px; padding: 16px;
+    display: flex; gap: 16px; align-items: center;
+  }
+  .radar-svg { flex-shrink: 0; }
+  .radar-stats { flex: 1; }
+  .radar-stat {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 4px 0; font-size: 12px;
+  }
+  .radar-stat .bar { width: 80px; height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .radar-stat .fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+  .radar-stat .label { color: var(--muted); }
+  .radar-stat .val { font-weight: 500; min-width: 40px; text-align: right; }
+
+  .suggestion {
+    background: var(--panel-2); border-left: 2px solid var(--accent);
+    padding: 8px 12px; margin: 6px 0; font-size: 12px;
+    border-radius: 0 6px 6px 0; color: var(--text);
+  }
+
+  /* Metrics aside */
+  .metric-card {
+    background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 8px; padding: 14px; margin-bottom: 12px;
+  }
+  .metric-card .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+  .metric-card .big { font-size: 28px; font-weight: 600; color: var(--text); margin-top: 4px; }
+  .metric-card .sub { color: var(--muted); font-size: 11px; margin-top: 2px; }
+  .metric-card.ok .big { color: var(--ok); }
+  .metric-card.warn .big { color: var(--warn); }
+
+  /* 轮数、LLM 引擎等小标签 */
+  .row-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .row-tag { font-size: 10px; padding: 1px 6px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 3px; color: var(--muted); }
+
+  .dialogue-mini {
+    max-height: 280px; overflow-y: auto; background: var(--panel-2);
+    border-radius: 6px; padding: 8px;
+  }
+  .dialogue-mini .turn {
+    padding: 4px 8px; margin: 3px 0; border-radius: 4px; font-size: 12px;
+  }
+  .dialogue-mini .turn.ai { background: rgba(79,140,255,0.08); }
+  .dialogue-mini .turn.merchant { background: rgba(245,165,36,0.08); }
+  .dialogue-mini .turn .who { color: var(--muted); font-size: 10px; margin-bottom: 2px; }
+
+  /* 主按钮 */
+  .btn-primary {
+    padding: 8px 16px; background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border: 0; color: white; border-radius: 6px; cursor: pointer; font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">运营后台 · AI 全权代办沟通</div>
+  <div class="fill"></div>
+  <div class="user" id="user-info" style="display:none">
+    <span><span class="name" id="user-name"></span> · <span id="user-org"></span></span>
+    <button class="logout" onclick="logout()">退出</button>
+  </div>
+</div>
+
+<!-- Login -->
+<div class="login" id="login">
+  <div class="card">
+    <h2 id="login-title">登录运营后台</h2>
+    <p id="login-sub">用您注册过的邮箱和密码</p>
+    <div id="login-mode-register" style="display:none">
+      <label>组织名</label>
+      <input id="org_name" placeholder="如：上海博隆贸易" />
+    </div>
+    <label id="label-name" style="display:none">姓名</label>
+    <input id="name" placeholder="陈总" style="display:none" />
+    <label>邮箱</label>
+    <input id="email" type="email" placeholder="you@company.com" />
+    <label>密码</label>
+    <input id="password" type="password" placeholder="至少 6 位" />
+    <div class="error" id="login-error"></div>
+    <button class="btn-primary" id="login-btn" onclick="handleAuth()">登录</button>
+    <div class="toggle" onclick="toggleMode()" id="toggle-text">还没有账号？立即注册</div>
+  </div>
+</div>
+
+<!-- 主页 -->
+<div class="layout" id="main" style="display:none">
+  <main>
+    <div class="filters">
+      <span style="color: var(--muted); font-size: 12px; padding: 4px 0;">筛选：</span>
+      <div class="filter-chip active" data-status="all" onclick="setFilter('all')">全部</div>
+      <div class="filter-chip" data-status="success" onclick="setFilter('success')">✅ 成功</div>
+      <div class="filter-chip" data-status="needs_user" onclick="setFilter('needs_user')">⚠️ 升级</div>
+      <div class="filter-chip" data-status="failed" onclick="setFilter('failed')">❌ 失败</div>
+      <div class="filter-chip" data-status="in_progress" onclick="setFilter('in_progress')">⏳ 进行中</div>
+      <div class="fill" style="flex:1"></div>
+      <button class="btn-primary" onclick="loadOrders()" style="font-size:12px; padding: 4px 12px;">🔄 刷新</button>
+    </div>
+    <div class="order-list" id="order-list">
+      <div class="empty">加载中...</div>
+    </div>
+  </main>
+
+  <aside class="metrics">
+    <h3 style="margin: 0 0 12px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">📊 运营指标</h3>
+    <div id="metrics-box">加载中...</div>
+    <h3 style="margin: 20px 0 12px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">📋 订单详情</h3>
+    <div id="detail-box">
+      <div class="empty" style="padding: 30px 0">← 点左侧订单查看</div>
+    </div>
+  </aside>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let TOKEN = localStorage.getItem('aiagent_token') || '';
+let USER = JSON.parse(localStorage.getItem('aiagent_user') || 'null');
+let ORG = JSON.parse(localStorage.getItem('aiagent_org') || 'null');
+let ORDERS = [];
+let CURRENT = null;
+let FILTER = 'all';
+let AUTH_MODE = 'login';  // 'login' or 'register'
+
+function showApp() {
+  $('login').style.display = 'none';
+  $('main').style.display = 'grid';
+  $('user-info').style.display = 'flex';
+  $('user-name').textContent = USER.name;
+  $('user-org').textContent = ORG.name;
+  loadOrders();
+  loadMetrics();
+}
+
+function showLogin() {
+  $('login').style.display = 'flex';
+  $('main').style.display = 'none';
+  $('user-info').style.display = 'none';
+}
+
+function toggleMode() {
+  AUTH_MODE = AUTH_MODE === 'login' ? 'register' : 'login';
+  if (AUTH_MODE === 'register') {
+    $('login-title').textContent = '注册账号';
+    $('login-sub').textContent = '30 秒搞定，开始管理您的订单';
+    $('login-mode-register').style.display = 'block';
+    $('label-name').style.display = 'block';
+    $('name').style.display = 'block';
+    $('login-btn').textContent = '注册';
+    $('toggle-text').textContent = '已有账号？返回登录';
+  } else {
+    $('login-title').textContent = '登录运营后台';
+    $('login-sub').textContent = '用您注册过的邮箱和密码';
+    $('login-mode-register').style.display = 'none';
+    $('label-name').style.display = 'none';
+    $('name').style.display = 'none';
+    $('login-btn').textContent = '登录';
+    $('toggle-text').textContent = '还没有账号？立即注册';
+  }
+  $('login-error').textContent = '';
+}
+
+async function handleAuth() {
+  $('login-error').textContent = '';
+  const email = $('email').value.trim();
+  const password = $('password').value;
+  if (!email || !password) {
+    $('login-error').textContent = '请填写邮箱和密码';
+    return;
+  }
+  try {
+    let r;
+    if (AUTH_MODE === 'register') {
+      const org_name = $('org_name').value.trim() || '我的组织';
+      const name = $('name').value.trim() || email.split('@')[0];
+      r = await fetch('/api/auth/register', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({org_name, email, password, name})
+      });
+    } else {
+      r = await fetch('/api/auth/login', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password})
+      });
+    }
+    const data = await r.json();
+    if (!r.ok) {
+      $('login-error').textContent = data.detail || '操作失败';
+      return;
+    }
+    TOKEN = data.token;
+    USER = data.user;
+    ORG = data.org;
+    localStorage.setItem('aiagent_token', TOKEN);
+    localStorage.setItem('aiagent_user', JSON.stringify(USER));
+    localStorage.setItem('aiagent_org', JSON.stringify(ORG));
+    showApp();
+  } catch (e) {
+    $('login-error').textContent = '网络错误: ' + e.message;
+  }
+}
+
+function logout() {
+  localStorage.removeItem('aiagent_token');
+  localStorage.removeItem('aiagent_user');
+  localStorage.removeItem('aiagent_org');
+  TOKEN = ''; USER = null; ORG = null;
+  showLogin();
+}
+
+async function api(path, opts={}) {
+  opts.headers = {...(opts.headers || {}), 'Authorization': 'Bearer ' + TOKEN};
+  if (opts.body && typeof opts.body === 'object') {
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(opts.body);
+  }
+  const r = await fetch(path, opts);
+  if (r.status === 401) { logout(); return null; }
+  return await r.json();
+}
+
+async function loadOrders() {
+  $('order-list').innerHTML = '<div class="empty">加载中...</div>';
+  const data = await api('/api/orders?limit=50');
+  if (!data) return;
+  ORDERS = data;
+  renderOrders();
+}
+
+function renderOrders() {
+  const filtered = FILTER === 'all' ? ORDERS : ORDERS.filter(o => o.status === FILTER);
+  if (filtered.length === 0) {
+    $('order-list').innerHTML = '<div class="empty">无订单 · <a href="/static/submit.html" style="color: var(--accent)">去下单</a></div>';
+    return;
+  }
+  $('order-list').innerHTML = filtered.map(o => {
+    const eval_ = (o.result || {}).evaluation;
+    const score = eval_ ? eval_.total : null;
+    const scoreClass = !score ? 'score-na' : score >= 80 ? 'score-A' : score >= 60 ? 'score-B' : score >= 40 ? 'score-C' : 'score-D';
+    const scoreLabel = !score ? '—' : score >= 80 ? 'A' : score >= 60 ? 'B' : score >= 40 ? 'C' : 'D';
+    const tried = ((o.result || {}).tried_strategies || []).join(', ') || '—';
+    const rounds = ((o.result || {}).receipt || {}).rounds || Math.ceil((o.dialogue || []).length / 2);
+    return `
+      <div class="order-row" onclick="selectOrder('${o.id}')">
+        <div>
+          <div class="org">${o.organization}</div>
+          <div class="req">${o.requirement.slice(0, 50)}</div>
+        </div>
+        <div class="meta">
+          <div>${o.target_language.toUpperCase()} · ${o.scenario}</div>
+          <div class="row-tags" style="margin-top:4px">
+            <span class="row-tag">${rounds} 轮</span>
+            <span class="row-tag">${o.preferred_channel}</span>
+          </div>
+        </div>
+        <div class="meta" style="font-size:12px">
+          <div>${tried}</div>
+          <div style="color: var(--muted)">${(o.result || {}).receipt?.llm_driven ? '🧠 LLM 驱动' : '📋 V1.2 规则'}</div>
+        </div>
+        <div><span class="status-pill ${o.status}">${o.status}</span></div>
+        <div><span class="score-badge ${scoreClass}"><span class="num">${score ?? '—'}</span> ${scoreLabel}</span></div>
+        <div class="meta" style="font-size:11px">${(o.created_at || '').slice(5, 16).replace('T', ' ')}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function setFilter(status) {
+  FILTER = status;
+  document.querySelectorAll('.filter-chip').forEach(el => {
+    el.classList.toggle('active', el.dataset.status === status);
+  });
+  renderOrders();
+}
+
+async function selectOrder(id) {
+  const data = await api('/api/orders/' + id);
+  if (!data) return;
+  CURRENT = data;
+  renderDetail();
+}
+
+function renderDetail() {
+  if (!CURRENT) {
+    $('detail-box').innerHTML = '<div class="empty" style="padding:30px 0">← 点左侧订单查看</div>';
+    return;
+  }
+  const o = CURRENT;
+  const eval_ = (o.result || {}).evaluation;
+  const hasEval = !!eval_;
+
+  let evalHTML = '';
+  if (hasEval) {
+    const dims = eval_.dimensions;
+    const radar = eval_.radar;
+    evalHTML = `
+      <div class="detail-section">
+        <h3>🧠 AI 表现评分 <span style="color: var(--muted); font-size: 10px;">${eval_.engine || ''}</span></h3>
+        <div class="radar-box">
+          <svg class="radar-svg" width="120" height="120" viewBox="0 0 120 120">
+            ${renderRadar(radar)}
+          </svg>
+          <div class="radar-stats">
+            ${['etiquette','strategy','concession','efficiency','satisfaction'].map((k, i) => {
+              const d = dims[k];
+              return `<div class="radar-stat">
+                <span class="label">${d.label}</span>
+                <span class="bar"><span class="fill" style="width:${radar[i]}%"></span></span>
+                <span class="val">${d.score}/${d.max}</span>
+              </div>`;
+            }).join('')}
+            <div class="radar-stat" style="border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px;">
+              <span class="label"><b>总分</b></span>
+              <span class="bar"></span>
+              <span class="val" style="color: var(--accent); font-size: 16px;"><b>${eval_.total}</b></span>
+            </div>
+          </div>
+        </div>
+        ${eval_.suggestions && eval_.suggestions.length ? `
+          <div style="margin-top: 10px;">
+            <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">改进建议：</div>
+            ${eval_.suggestions.map(s => `<div class="suggestion">${s}</div>`).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  } else {
+    evalHTML = '<div class="detail-section"><h3>🧠 AI 评分</h3><div class="meta" style="color: var(--muted)">未生成（订单还在跑或评估失败）</div></div>';
+  }
+
+  const dialogue = (o.dialogue || []).slice(-10);
+  const dialogueHTML = dialogue.length ? `
+    <div class="dialogue-mini">
+      ${dialogue.map(t => `
+        <div class="turn ${t.speaker}">
+          <div class="who">${t.speaker === 'ai' ? '🤖 AI' : '🏨 商家'}</div>
+          <div>${(t.translated || t.original || '').slice(0, 200)}</div>
+        </div>
+      `).join('')}
+      ${o.dialogue.length > 10 ? `<div class="meta" style="text-align:center; padding:4px; color: var(--muted)">… 还有 ${o.dialogue.length - 10} 轮</div>` : ''}
+    </div>
+  ` : '<div class="meta" style="color: var(--muted)">无对话</div>';
+
+  $('detail-box').innerHTML = `
+    <div class="detail">
+      <h2>${o.organization}</h2>
+      <div class="org">${o.requirement}</div>
+      <div class="kv" style="margin-bottom: 16px">
+        <span class="k">约束</span><span>${o.constraints || '—'}</span>
+        <span class="k">通道</span><span>${o.preferred_channel} · ${o.target_language}</span>
+        <span class="k">状态</span><span><span class="status-pill ${o.status}">${o.status}</span></span>
+        <span class="k">订单 ID</span><span style="font-family: monospace; font-size: 11px;">${o.id}</span>
+      </div>
+      ${evalHTML}
+      <div class="detail-section">
+        <h3>💬 对话（最近 10 轮）</h3>
+        ${dialogueHTML}
+      </div>
+    </div>
+  `;
+}
+
+function renderRadar(values) {
+  // 5 维雷达：商务话术 / 策略选优 / 让步幅度 / 对话效率 / 商家满意度
+  const cx = 60, cy = 60, R = 45;
+  const angles = [-Math.PI/2, -Math.PI/2 + 2*Math.PI/5, -Math.PI/2 + 4*Math.PI/5, -Math.PI/2 + 6*Math.PI/5, -Math.PI/2 + 8*Math.PI/5];
+  const points = values.map((v, i) => {
+    const r = R * (v / 100);
+    const x = cx + r * Math.cos(angles[i]);
+    const y = cy + r * Math.sin(angles[i]);
+    return `${x},${y}`;
+  }).join(' ');
+  // 网格线
+  let grid = '';
+  for (let k = 1; k <= 4; k++) {
+    const r = R * k / 4;
+    const pts = angles.map(a => `${cx + r*Math.cos(a)},${cy + r*Math.sin(a)}`).join(' ');
+    grid += `<polygon points="${pts}" fill="none" stroke="#2a3142" stroke-width="0.5" />`;
+  }
+  // 轴线
+  const axes = angles.map(a => `<line x1="${cx}" y1="${cy}" x2="${cx + R*Math.cos(a)}" y2="${cy + R*Math.sin(a)}" stroke="#2a3142" stroke-width="0.5" />`).join('');
+  return `
+    ${grid}
+    ${axes}
+    <polygon points="${points}" fill="rgba(79,140,255,0.25)" stroke="#4f8cff" stroke-width="1.5" />
+    ${values.map((v, i) => {
+      const r = R * (v / 100);
+      const x = cx + r * Math.cos(angles[i]);
+      const y = cy + r * Math.sin(angles[i]);
+      return `<circle cx="${x}" cy="${y}" r="2" fill="#7c5cff" />`;
+    }).join('')}
+  `;
+}
+
+async function loadMetrics() {
+  const data = await api('/api/metrics');
+  if (!data) return;
+  const o = data.orders;
+  $('metrics-box').innerHTML = `
+    <div class="metric-card ok">
+      <div class="label">总订单数</div>
+      <div class="big">${o.total}</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">成功率</div>
+      <div class="big">${o.success_rate}%</div>
+      <div class="sub">成功 ${o.by_status.success || 0} · 失败 ${o.by_status.failed || 0} · 升级 ${o.by_status.needs_user || 0}</div>
+    </div>
+    <div class="metric-card ${data.ai_quality.avg_evaluation_total >= 70 ? 'ok' : data.ai_quality.avg_evaluation_total >= 50 ? '' : 'warn'}">
+      <div class="label">AI 平均分</div>
+      <div class="big">${data.ai_quality.avg_evaluation_total || '—'}</div>
+      <div class="sub">满分 100 · 5 维评估均值</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">范围</div>
+      <div class="big" style="font-size: 18px;">${data.scope === 'org' ? '🏢 当前组织' : '🌐 全局'}</div>
+    </div>
+  `;
+}
+
+// Init
+if (TOKEN && USER && ORG) {
+  showApp();
+} else {
+  showLogin();
+}
+
+// 回车登录
+$('password').addEventListener('keydown', e => { if (e.key === 'Enter') handleAuth(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+{
+  "industry": "cable",
+  "label": "线缆",
+  "common_terms": [
+    "截面积 cross-section",
+    "导体电阻 conductor resistance",
+    "绝缘厚度 insulation thickness",
+    "阻燃 flame retardant",
+    "低烟无卤 LSZH",
+    "PVC 护套",
+    "XLPE 绝缘",
+    "耐电压 voltage withstand",
+    "载流量 ampacity",
+    "铜导体 copper conductor",
+    "铝导体 aluminium conductor",
+    "屏蔽层 shield layer",
+    "铠装 armoured",
+    "国标 GB/T",
+    "IEC 60502",
+    "BS 5467",
+    "CE 认证",
+    "UL 认证"
+  ],
+  "compliance_requirements": [
+    "CE-EMC",
+    "RoHS 2.0",
+    "REACH",
+    "CCC"
+  ],
+  "typical_clients": [
+    "国网/南网采购",
+    "建筑总包",
+    "工业成套",
+    "出口贸易商"
+  ],
+  "scenarios": {
+    "sample_confirm": {
+      "scenario": "sample_confirm",
+      "scenario_label": "样品确认",
+      "scenario_desc": "寄样地址/快递单/样品规格/运费承担",
+      "keywords": [
+        "样品规格 sample spec",
+        "截面积 cross-section",
+        "导体材质",
+        "阻燃等级",
+        "样品长度 sample length",
+        "寄样地址",
+        "DHL 快递单",
+        "顺丰国际",
+        "样品费 sample fee",
+        "运费承担 freight terms"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "We'd like to request a 1.5m cable sample with XLPE insulation, 4mm² cross-section, for lab testing. Could you confirm availability and the freight terms?"
+        },
+        {
+          "lang": "ja",
+          "text": "XLPE 絶縁・4mm² 断面積のケーブルサンプル 1.5m を提供いただけますでしょうか。試験用に必要です。運賃条件も併せてご確認ください。"
+        },
+        {
+          "lang": "ko",
+          "text": "XLPE 절연, 단면적 4mm² 케이블 샘플 1.5m 를 시험용으로 요청드립니다. 재고 여부와 운송비 부담 주체도 확인 부탁드립니다."
+        }
+      ],
+      "hard_rule_keywords": [
+        "免运费",
+        "DDP",
+        "CIF",
+        "样品费免"
+      ],
+      "escalation_threshold": {
+        "pct": 5,
+        "abs": 800,
+        "rounds": 4
+      }
+    },
+    "order_modify": {
+      "scenario": "order_modify",
+      "scenario_label": "订单变更",
+      "scenario_desc": "改交期/改地址/改数量/分批",
+      "keywords": [
+        "改交期",
+        "分批发货 partial shipment",
+        "改收货地址",
+        "改规格",
+        "型号变更 model change",
+        "数量调整 quantity adjustment",
+        "截面积升级",
+        "加急 rush order",
+        "批次 lot"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "Due to project delay, we need to push the delivery from June 15 to June 25. Can you confirm if the new timeline is feasible without penalty?"
+        },
+        {
+          "lang": "ja",
+          "text": "工事スケジュールの都合で、納期を 6/15 から 6/25 に後ろ倒ししたいのですが、違約金なしで対応可能でしょうか。"
+        }
+      ],
+      "hard_rule_keywords": [
+        "变更交付地",
+        "INCOTERM 变更",
+        "订单金额 -20%"
+      ],
+      "escalation_threshold": {
+        "pct": 10,
+        "abs": 5000,
+        "rounds": 4
+      }
+    },
+    "reconciliation": {
+      "scenario": "reconciliation",
+      "scenario_label": "对账",
+      "scenario_desc": "对账单/付款水单/汇率/抹零争议",
+      "keywords": [
+        "对账单 statement",
+        "付款水单 payment slip",
+        "汇率换算 exchange rate",
+        "增值税 VAT",
+        "FOB 价",
+        "CIF 价",
+        "尾款 balance payment",
+        "定金 deposit",
+        "账期 payment terms",
+        "信用证 L/C"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "We've received your statement for shipment #A2024-883. The FOB amount shows USD 18,500 but our PO was USD 18,200. Could you clarify the USD 300 difference?"
+        }
+      ],
+      "hard_rule_keywords": [
+        "抹零",
+        "少付",
+        "尾款延期",
+        "拒付"
+      ],
+      "escalation_threshold": {
+        "pct": 3,
+        "abs": 1000,
+        "rounds": 3
+      }
+    },
+    "price_negotiation": {
+      "scenario": "price_negotiation",
+      "scenario_label": "议价",
+      "scenario_desc": "还价/折扣/批量优惠/账期",
+      "keywords": [
+        "还价",
+        "折扣",
+        "批量优惠 volume discount",
+        "账期延长",
+        "现金折扣",
+        "返点 rebate",
+        "成本加价 cost-plus",
+        "原材料波动 raw material",
+        "铜价波动"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "The current offer is USD 2.85/m. Given our annual volume of 500,000m, can you offer a 5% volume discount with 60-day payment terms?"
+        },
+        {
+          "lang": "ja",
+          "text": "現在 USD 2.85/m ですが、年間 50 万 m の購入量に対し、5% ボリュームディスカウントと 60 日決済条件で対応いただけませんか。"
+        }
+      ],
+      "hard_rule_keywords": [
+        "降价 10%",
+        "返点",
+        "INCOTERM 变更",
+        "账期 90 天"
+      ],
+      "escalation_threshold": {
+        "pct": 5,
+        "abs": 3000,
+        "rounds": 6
+      }
+    },
+    "claim_dispute": {
+      "scenario": "claim_dispute",
+      "scenario_label": "索赔/纠纷",
+      "scenario_desc": "质量异议/延期罚则/INCOTERM 变更",
+      "keywords": [
+        "质量异议",
+        "导体电阻超标",
+        "绝缘击穿 insulation breakdown",
+        "延期罚则",
+        "退运",
+        "第三方检测",
+        "现场照片",
+        "测试报告",
+        "INCOTERM 责任",
+        "不可抗力 force majeure"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "The batch #B2024-156 showed conductor resistance 12% above spec during our incoming inspection. Per our contract clause 7.2, we request a 30% price rebate and free replacement."
+        }
+      ],
+      "hard_rule_keywords": [
+        "全额退款",
+        "拒收",
+        "起诉",
+        "仲裁"
+      ],
+      "escalation_threshold": {
+        "pct": 30,
+        "abs": 50000,
+        "rounds": 6
+      }
+    }
+  }
+}

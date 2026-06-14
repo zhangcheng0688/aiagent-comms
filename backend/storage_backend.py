@@ -1,0 +1,63 @@
+"""V3.0 存储后端抽象层。
+
+支持两种后端：
+- SQLite（默认，零依赖，demo 适用）
+- PostgreSQL（生产路径，asyncpg）
+
+切换方式：环境变量 `STORAGE_BACKEND=postgres` + PG_* 配置
+
+两个后端都实现 `BaseStorage` 接口。SQLiteStorage 复用现有 storage.py 的实现。
+"""
+from __future__ import annotations
+import os
+import logging
+from typing import Protocol
+from pathlib import Path
+
+log = logging.getLogger("aiagent.storage")
+
+
+class BaseStorage(Protocol):
+    """所有存储后端的统一接口。"""
+
+    async def init(self) -> None: ...
+    async def create_order(self, order) -> None: ...
+    async def update_order(self, order) -> None: ...
+    async def get_order(self, order_id: str): ...
+    async def list_orders(self, limit: int = 50, org_id: str | None = None): ...
+    async def create_proposal(self, order_id: str, proposal) -> None: ...
+    async def get_proposal(self, proposal_id: str): ...
+
+    # A2
+    async def create_org(self, org) -> None: ...
+    async def get_org(self, org_id: str): ...
+    async def create_user(self, user) -> None: ...
+    async def get_user_by_email(self, email: str): ...
+    async def get_user(self, user_id: str): ...
+    async def create_token(self, token) -> None: ...
+    async def get_token(self, token_hash: str): ...
+    async def touch_token(self, token_hash: str) -> None: ...
+
+    # A4
+    async def count_orders(self, org_id: str | None = None) -> int: ...
+    async def count_orders_by_status(self, org_id: str | None = None) -> dict: ...
+    async def avg_evaluation_total(self, org_id: str | None = None) -> float | None: ...
+
+
+def get_storage_backend() -> BaseStorage:
+    """工厂方法：按 STORAGE_BACKEND env 选后端。"""
+    backend = os.getenv("STORAGE_BACKEND", "sqlite").lower()
+    if backend == "postgres":
+        try:
+            from .storage_pg import PostgresStorage
+            log.info("Using PostgreSQL backend")
+            return PostgresStorage()
+        except ImportError as e:
+            log.warning(f"PostgreSQL backend requested but unavailable: {e}, fallback to SQLite")
+    # 默认 SQLite
+    from .storage import Storage
+    return Storage()
+
+
+# 全局实例
+storage: BaseStorage = get_storage_backend()

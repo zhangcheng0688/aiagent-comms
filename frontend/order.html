@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>订单详情 · AI 全权代办</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { --bg: #f7f5f0; --paper: #fff; --ink: #14171e; --ink-2: #3a4256; --muted: #7c7a72; --primary: #2f6f5e; --primary-soft: #e3efea; --line: #e9e3d6; --warn: #b85c00; --warn-soft: #fef3e2; --ok: #5a8b76; --ok-soft: #e3efea; --err: #b06367; --err-soft: #f3e1e1; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Outfit', -apple-system, 'PingFang SC', sans-serif; background: var(--bg); color: var(--ink); padding: 0; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 28px; font-weight: 600; margin: 0 0 8px; }
+  .back { display: inline-block; color: var(--muted); text-decoration: none; font-size: 14px; margin-bottom: 16px; }
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
+  .status { display: inline-block; padding: 4px 12px; border-radius: 16px; font-size: 13px; font-weight: 500; }
+  .status.pending { background: var(--warn-soft); color: var(--warn); }
+  .status.in_progress { background: var(--primary-soft); color: var(--primary); }
+  .status.success { background: var(--ok-soft); color: var(--ok); }
+  .status.failed, .status.needs_user { background: var(--err-soft); color: var(--err); }
+  .meta { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; font-size: 14px; margin: 12px 0; }
+  .meta dt { color: var(--muted); }
+  .meta dd { margin: 0; }
+  h3 { font-size: 16px; margin: 0 0 12px; }
+  .dialogue { max-height: 400px; overflow-y: auto; }
+  .turn { padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; }
+  .turn.ai { background: var(--primary-soft); }
+  .turn.merchant { background: var(--bg); border: 1px solid var(--line); }
+  .turn-label { font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--ink-2); }
+  .turn-original { font-size: 13px; color: var(--muted); margin-top: 4px; font-style: italic; }
+  .intent-confirmed { padding: 6px 12px; background: var(--ok-soft); border-radius: 6px; margin: 4px 0; font-size: 13px; }
+  .negotiate-btn { display: inline-block; padding: 12px 24px; background: var(--warn); color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 12px; }
+  .loading { padding: 40px; text-align: center; color: var(--muted); }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--primary); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px; vertical-align: middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/static/submit.html" class="back">← 新订单</a>
+  <h1>订单详情</h1>
+
+  <div id="orderContainer">
+    <div class="card loading"><span class="spinner"></span>加载中...</div>
+  </div>
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const orderId = params.get('id');
+
+async function loadOrder() {
+  if (!orderId) {
+    document.getElementById('orderContainer').innerHTML = '<div class="card">请提供订单 ID</div>';
+    return;
+  }
+  try {
+    const resp = await fetch(`/api/orders/${orderId}`);
+    if (!resp.ok) throw new Error('订单不存在');
+    const order = await resp.json();
+    renderOrder(order);
+  } catch (err) {
+    document.getElementById('orderContainer').innerHTML = `<div class="card">加载失败: ${err.message}</div>`;
+  }
+}
+
+function renderOrder(o) {
+  const statusClass = o.status;
+  const statusText = {
+    pending: '等待处理', in_progress: '沟通中', success: '已完成', failed: '失败', needs_user: '需要决策'
+  }[o.status] || o.status;
+
+  const stateText = {
+    init: '初始化', connecting: '拨号中', opening: '开场', confirming: '确认中',
+    negotiating: '协商中', await_user: '等待决策', escalate: '升级',
+    closing_success: '成功结束', closing_failure: '失败结束', aborted: '已中止'
+  }[o.state] || o.state;
+
+  let html = `
+    <div class="card">
+      <div>
+        <span class="status ${statusClass}">${statusText}</span>
+        <span style="color:var(--muted);font-size:13px;margin-left:8px">状态: ${stateText}</span>
+      </div>
+      <dl class="meta">
+        <dt>订单 ID</dt><dd><code>${o.id}</code></dd>
+        <dt>目标机构</dt><dd>${o.organization}</dd>
+        <dt>联系号码</dt><dd>${o.contact_number}</dd>
+        <dt>沟通通道</dt><dd>${o.preferred_channel} · ${o.target_language}</dd>
+        <dt>原始需求</dt><dd>${o.requirement}</dd>
+        ${o.constraints ? `<dt>约束</dt><dd>${o.constraints}</dd>` : ''}
+        <dt>创建时间</dt><dd>${new Date(o.created_at).toLocaleString('zh-CN')}</dd>
+      </dl>
+    </div>
+
+    ${o.intents && o.intents.length ? `
+    <div class="card">
+      <h3>拆解的诉求（${o.intents.length}项）</h3>
+      ${o.intents.map(i => `
+        <div class="intent-confirmed">
+          <strong>${i.type}</strong>: ${i.description}
+          ${i.target_value ? `<br><small>期望值: ${i.target_value}</small>` : ''}
+          ${i.confirmed_value ? `<br><small>✅ 商家确认: ${i.confirmed_value}</small>` : ''}
+        </div>
+      `).join('')}
+    </div>` : ''}
+
+    ${o.dialogue && o.dialogue.length ? `
+    <div class="card">
+      <h3>双语对话记录（${o.dialogue.length / 2} 轮）</h3>
+      <div class="dialogue">
+        ${o.dialogue.map(t => `
+          <div class="turn ${t.speaker}">
+            <div class="turn-label">${t.speaker === 'ai' ? '🤖 AI' : '👔 商家'} · 第${t.turn_id}轮</div>
+            <div>${t.speaker === 'ai' ? t.original : t.translated}</div>
+            ${t.speaker === 'merchant' ? `<div class="turn-original">原话: ${t.original}</div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>` : ''}
+  `;
+
+  // 升级提示
+  if (o.status === 'needs_user' && o.result && o.result.negotiation_required) {
+    html += `
+      <div class="card" style="background: var(--warn-soft); border-color: var(--warn);">
+        <h3>⚠️ 需要你的决策</h3>
+        <p><strong>原因：</strong>${o.result.reason || '商家提出新方案'}</p>
+        <a href="/negotiate/${o.id}" class="negotiate-btn">查看商家方案并决策 →</a>
+      </div>
+    `;
+  }
+
+  // 结果回执
+  if (o.result && (o.status === 'success' || o.status === 'failed')) {
+    html += `
+      <div class="card">
+        <h3>${o.status === 'success' ? '✅ 沟通结果' : '❌ 沟通结果'}</h3>
+        <p><strong>总结：</strong>${o.result.summary || ''}</p>
+        ${o.result.receipt ? `
+          <dl class="meta">
+            <dt>通道</dt><dd>${o.result.receipt.channel}（${o.result.receipt.mock ? 'mock' : '真实'}）</dd>
+            <dt>语种</dt><dd>${o.result.receipt.language}</dd>
+            <dt>对话轮数</dt><dd>${o.result.receipt.rounds || '-'}</dd>
+          </dl>
+        ` : ''}
+        ${o.result.next_steps ? `<p><strong>建议：</strong></p><ul>${o.result.next_steps.map(s => `<li>${s}</li>`).join('')}</ul>` : ''}
+      </div>
+    `;
+  }
+
+  document.getElementById('orderContainer').innerHTML = html;
+}
+
+loadOrder();
+
+// 沟通中状态自动刷新
+setInterval(() => {
+  if (orderId) {
+    fetch(`/api/orders/${orderId}`).then(r => r.json()).then(renderOrder).catch(() => {});
+  }
+}, 3000);
+</script>
+</body>
+</html>

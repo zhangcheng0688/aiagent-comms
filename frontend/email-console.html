@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 邮件代办 · 一站式控制台</title>
+<link rel="stylesheet" href="/static/css/design-system.css" />
+<style>
+  body { background: #0b0d12; color: #e6ebf3; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px; }
+  .hero { display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; margin-bottom: 28px; align-items: center; }
+  .hero h1 { font-size: 36px; font-weight: 700; margin: 0 0 8px; background: linear-gradient(120deg, #4f8cff, #7c5cff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero p { color: #8a93a6; font-size: 15px; line-height: 1.7; margin: 0; }
+  .badge { display: inline-block; padding: 4px 10px; background: rgba(79, 140, 255, 0.12); color: #4f8cff; border-radius: 4px; font-size: 12px; margin-bottom: 12px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .panel { background: #14181f; border: 1px solid #1c2230; border-radius: 12px; padding: 20px; }
+  .panel h2 { font-size: 14px; color: #8a93a6; text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+  .panel h2 .num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: #4f8cff; color: #fff; border-radius: 50%; font-size: 12px; font-weight: 600; }
+  .label { display: block; font-size: 12px; color: #8a93a6; margin: 10px 0 6px; }
+  .input, .textarea, .select { width: 100%; padding: 10px 12px; background: #0b0d12; color: #e6ebf3; border: 1px solid #1c2230; border-radius: 6px; font-size: 14px; font-family: inherit; }
+  .input:focus, .textarea:focus, .select:focus { outline: 1px solid #4f8cff; border-color: #4f8cff; }
+  .textarea { min-height: 110px; resize: vertical; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 12px 20px; background: linear-gradient(135deg, #4f8cff, #7c5cff); color: #fff; border: 0; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn:hover { filter: brightness(1.1); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-ghost { padding: 8px 14px; background: transparent; color: #4f8cff; border: 1px solid #4f8cff; }
+  .preview { background: #0b0d12; border: 1px solid #1c2230; border-radius: 6px; padding: 14px; font-family: 'SF Mono', monospace; font-size: 12px; line-height: 1.6; max-height: 320px; overflow: auto; white-space: pre-wrap; }
+  .preview .header { color: #f5a524; }
+  .preview .body { color: #c5cdd9; margin-top: 8px; }
+  .timeline { font-size: 13px; line-height: 1.9; }
+  .timeline .step { display: flex; gap: 10px; padding: 4px 0; }
+  .timeline .step .ico { width: 18px; text-align: center; }
+  .timeline .step.ok { color: #2fd47e; }
+  .timeline .step.run { color: #f5a524; }
+  .timeline .step.wait { color: #8a93a6; }
+  .result-box { background: #0b0d12; border: 1px solid #1c2230; border-radius: 8px; padding: 16px; margin-top: 14px; }
+  .result-box h3 { font-size: 14px; color: #4f8cff; margin: 0 0 10px; }
+  .summary { font-size: 14px; line-height: 1.6; color: #c5cdd9; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+  .stat { background: #14181f; padding: 10px; border-radius: 6px; }
+  .stat .v { font-size: 18px; font-weight: 600; color: #4f8cff; }
+  .stat .l { font-size: 11px; color: #8a93a6; }
+  .footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid #1c2230; font-size: 12px; color: #8a93a6; }
+  .examples { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .ex { padding: 4px 10px; background: #1c2230; color: #4f8cff; border-radius: 12px; font-size: 12px; cursor: pointer; }
+  .ex:hover { background: #4f8cff; color: #fff; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #4f8cff; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (max-width: 800px) { .hero, .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div>
+      <span class="badge">🚀 V3.0 · C 方案邮件转发</span>
+      <h1>AI 邮件代办 · 一站式控制台</h1>
+      <p>不用装客户端，不用换工作流。<b>把客户的邮件转发到 aiagent@qq.com</b>，AI 自动跑完整个电话+短信流程，结果以邮件形式回执。<br/>
+      这个控制台是给"内部运营 / 客户试用"用的：填写一封要发给 AI 的邮件，下方实时看 AI 跑完，回信直接显示。</p>
+    </div>
+    <div class="panel" style="padding: 16px;">
+      <h2 style="margin-top:0"><span class="num">1</span>3 步用法</h2>
+      <div class="timeline" style="margin-top: 4px;">
+        <div class="step ok">① 写一封邮件，填好"商家 + 电话 + 需求"三要素</div>
+        <div class="step ok">② 点下面的"模拟发送"，AI 全自动跑</div>
+        <div class="step ok">③ 看右侧"AI 实时处理"和"邮件回执预览"</div>
+      </div>
+      <p style="font-size: 12px; color: #8a93a6; margin: 12px 0 0;">生产部署时：<br/>
+      <code style="color: #4f8cff;">./scripts/start_email_worker.sh</code><br/>
+      启动后端 IMAP 轮询，真实收信/回信。</p>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- 左侧：邮件编辑器 -->
+    <div class="panel">
+      <h2><span class="num">1</span>邮件源（客户视角）</h2>
+
+      <label class="label">From</label>
+      <input class="input" id="from-name" value="李总" placeholder="发件人姓名" />
+      <input class="input" id="from-email" value="li@customer.com" placeholder="发件邮箱" style="margin-top:6px;" />
+
+      <label class="label">To</label>
+      <input class="input" id="to-email" value="aiagent@qq.com" readonly style="opacity:0.7;" />
+
+      <label class="label">Subject 主题</label>
+      <input class="input" id="subject" value="帮我订三亚海棠湾威斯汀" />
+
+      <label class="label">正文</label>
+      <textarea class="textarea" id="body">AI 你好，下周三（3/19）我带家人去三亚玩 3 晚，帮我订海棠湾威斯汀度假酒店，电话 +86-898-88658888，1 间海景大床房，预算 ≤¥2200/晚。注意不可加价，要原报价。</textarea>
+
+      <label class="label">快速填充</label>
+      <div class="examples">
+        <span class="ex" data-kind="hotel">🏨 酒店</span>
+        <span class="ex" data-kind="cable">🔌 电线电缆询价</span>
+        <span class="ex" data-kind="machinery">⚙️ 机加工询价</span>
+        <span class="ex" data-kind="textile">🧵 纺织询价</span>
+        <span class="ex" data-kind="logistics">🚢 海运询价</span>
+      </div>
+
+      <div style="margin-top: 18px; display: flex; gap: 10px;">
+        <button class="btn" id="send-btn">📨 模拟发送并跑 AI</button>
+        <button class="btn btn-ghost" id="reset-btn">重置</button>
+      </div>
+    </div>
+
+    <!-- 右侧：实时处理 -->
+    <div class="panel">
+      <h2><span class="num">2</span>AI 实时处理</h2>
+      <div class="timeline" id="timeline">
+        <div class="step wait"><span class="ico">○</span>等待发送...</div>
+      </div>
+
+      <div class="result-box" id="result" style="display:none;">
+        <h3 id="result-title">— 处理结果 —</h3>
+        <div class="summary" id="summary">—</div>
+        <div class="stats" id="stats"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部：邮件预览 / 回执 -->
+  <div class="panel" style="margin-top: 20px;">
+    <h2><span class="num">3</span>邮件预览 · 客户发来的源</h2>
+    <div class="preview" id="raw-preview"></div>
+  </div>
+
+  <div class="panel" style="margin-top: 20px;">
+    <h2><span class="num">4</span>AI 回信预览 · 客户收到这封</h2>
+    <div class="preview" id="reply-preview">— 发送邮件后这里会显示回执 —</div>
+  </div>
+
+  <div class="footer">
+    <b>后端：</b><code>http://127.0.0.1:8766</code> · <b>订单 ID：</b><span id="order-id">—</span> · <b>邮箱 worker 进程：</b><span id="worker-state">未启动（用控制台模拟）</span>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const EXAMPLES = {
+  hotel: {
+    subject: "帮我订上海外滩茂悦大酒店",
+    body: "AI 你好，客户要 4/10-4/12 入住上海外滩茂悦大酒店，2 晚 1 间豪华江景房，电话 +86-21-63239888，总预算 ≤¥4500。客户要求不可加价。",
+  },
+  cable: {
+    subject: "询价/远东电缆 YJV22 4×50",
+    body: "帮我联系远东电缆厂，电话 0574-88336666，要询价 YJV22 4×50 铜芯电缆 5000 米，XLPE 绝缘，付款 30% TT 预付。要尽量压价。",
+  },
+  machinery: {
+    subject: "询价/CNC 加工件",
+    body: "帮我联系宁波精机机械厂，电话 0574-87654321，要 CNC 加工 200 件，材质 6061-T6 铝合金，公差 ±0.05mm，表面阳极氧化。预算 ≤¥45/件。",
+  },
+  textile: {
+    subject: "询价/涤纶面料",
+    body: "帮我联系绍兴华纺纺织厂，电话 0575-88887777，要 5000 米涤纶面料，规格 300D×300D 密度 96×72，克重 180GSM，后整理防水。",
+  },
+  logistics: {
+    subject: "海运报价/宁波-洛杉矶",
+    body: "帮我联系中远海运宁波分公司，电话 0574-87331111，要询价 1×40HQ 宁波-洛杉矶 FCL 海运，提单 B/L，付款 30% TT 预付。要尽量压价。",
+  },
+};
+
+document.querySelectorAll('.ex').forEach((el) => {
+  el.onclick = () => {
+    const k = el.dataset.kind;
+    $('subject').value = EXAMPLES[k].subject;
+    $('body').value = EXAMPLES[k].body;
+    updateRawPreview();
+  };
+});
+
+function buildRawEmail() {
+  return (
+    `From: "${$('from-name').value}" <${$('from-email').value}>\n` +
+    `To: ${$('to-email').value}\n` +
+    `Subject: ${$('subject').value}\n` +
+    `Message-ID: <${Date.now()}.${Math.random().toString(36).slice(2, 8)}@customer.com>\n` +
+    `Date: ${new Date().toUTCString()}\n` +
+    `Content-Type: text/plain; charset=utf-8\n` +
+    `\n${$('body').value}\n`
+  );
+}
+
+function updateRawPreview() {
+  const raw = buildRawEmail();
+  const header = raw.split('\n\n')[0];
+  const body = raw.split('\n\n')[1] || '';
+  $('raw-preview').innerHTML =
+    `<div class="header">${header.replace(/</g, '&lt;')}</div>` +
+    `<div class="body">${body.replace(/</g, '&lt;')}</div>`;
+}
+
+['from-name', 'from-email', 'to-email', 'subject', 'body'].forEach((id) => {
+  $(id).addEventListener('input', updateRawPreview);
+});
+updateRawPreview();
+
+$('reset-btn').onclick = () => {
+  $('timeline').innerHTML = '<div class="step wait"><span class="ico">○</span>等待发送...</div>';
+  $('result').style.display = 'none';
+  $('reply-preview').textContent = '— 发送邮件后这里会显示回执 —';
+  $('order-id').textContent = '—';
+  $('send-btn').disabled = false;
+};
+
+$('send-btn').onclick = async () => {
+  const raw = buildRawEmail();
+  $('send-btn').disabled = true;
+  $('reply-preview').textContent = '⏳ 解析邮件中...';
+  resetTimeline();
+  setStep('ok', '① 邮件已收到，UTF-8 中文 header 解析 ✓');
+  setStep('run', '<span class="spinner"></span> ② 调后端 API 创建订单...');
+
+  // 1) 后端 API 解析（直接调 /api/orders）
+  let orderId = '';
+  let final = null;
+  try {
+    const orgMatch = ($('subject').value + $('body').value).match(/([^\s，。,\d]{2,20}(?:酒店|宾馆|工厂|厂|店|公司|集团))/);
+    const org = orgMatch ? orgMatch[1] : '未知名商家';
+    const phoneMatch = $('body').value.match(/\+\d{1,3}(?:[\s\-]?\d+){1,4}/);
+    const phone = phoneMatch ? phoneMatch[0].replace(/[\s\-]/g, '') : '+8613800000000';
+    const constraints = /不可加价|不能加价|不准加价|价格不变/.test($('body').value) ? '不可加价' : null;
+
+    const createRes = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        organization: org,
+        contact_number: phone,
+        requirement: $('body').value.substring(0, 500),
+        preferred_channel: 'sms',
+        scenario: 'hotel',
+        ...(constraints ? { constraints } : {}),
+      }),
+    });
+    if (!createRes.ok) throw new Error('create failed: ' + createRes.status);
+    const create = await createRes.json();
+    orderId = create.order_id;
+    $('order-id').textContent = orderId;
+    setStep('ok', `② 订单创建成功 <code>${orderId}</code>`);
+  } catch (e) {
+    setStep('err', `✗ 创建失败: ${e.message}`);
+    $('send-btn').disabled = false;
+    return;
+  }
+
+  setStep('run', '<span class="spinner"></span> ③ AI 跑协商流程（LLM 推理 + 模拟商家）...');
+  for (let i = 0; i < 30; i++) {
+    await new Promise((r) => setTimeout(r, 2000));
+    try {
+      const r = await fetch(`/api/orders/${orderId}`);
+      const o = await r.json();
+      if (o.status === 'success' || o.status === 'failed' || o.status === 'needs_user') {
+        final = o;
+        break;
+      }
+    } catch (e) { /* continue */ }
+  }
+  if (!final) {
+    setStep('err', '✗ AI 跑超时');
+    $('send-btn').disabled = false;
+    return;
+  }
+
+  setStep('ok', `③ AI 处理完毕 status=<code>${final.status}</code>`);
+  setStep('ok', '④ 构造回信（SMTP 模拟）...');
+  setStep('ok', '⑤ 邮件回信完成');
+
+  // 显示结果
+  $('result').style.display = 'block';
+  const result = final.result || {};
+  const summary = result.summary || '（无摘要）';
+  const statusZh = { success: '✅ 已成交', failed: '❌ 处理失败', needs_user: '⚠️ 需您确认' }[final.status] || final.status;
+  $('result-title').textContent = `${statusZh} · ${final.scenario || 'hotel'} · ${final.organization || ''}`;
+  $('summary').textContent = summary;
+
+  let statsHtml = '';
+  statsHtml += stat('订单 ID', orderId.slice(0, 12) + '...');
+  statsHtml += stat('场景', final.scenario || 'hotel');
+  statsHtml += stat('语言', (result.target_language || 'en').toUpperCase());
+  if (result.evaluation) {
+    statsHtml += stat('AI 评分', result.evaluation.total + ' / 100');
+  } else {
+    statsHtml += stat('轮次', String(result.rounds || 1));
+  }
+  $('stats').innerHTML = statsHtml;
+
+  // 构造回信预览
+  const text = buildReplyText(final, summary, statusZh, orderId);
+  $('reply-preview').textContent = text;
+
+  $('send-btn').disabled = false;
+};
+
+function resetTimeline() {
+  $('timeline').innerHTML = '';
+}
+function setStep(kind, text) {
+  const cls = kind === 'ok' ? 'ok' : kind === 'run' ? 'run' : kind === 'err' ? 'err' : 'wait';
+  const ico = kind === 'ok' ? '✓' : kind === 'run' ? '◐' : kind === 'err' ? '✗' : '○';
+  $('timeline').insertAdjacentHTML('beforeend', `<div class="step ${cls}"><span class="ico">${ico}</span>${text}</div>`);
+}
+function stat(label, value) {
+  return `<div class="stat"><div class="v">${value}</div><div class="l">${label}</div></div>`;
+}
+function buildReplyText(final, summary, statusZh, orderId) {
+  const result = final.result || {};
+  let text = '';
+  text += `From: AI 外贸代办 <aiagent@qq.com>\n`;
+  text += `To: ${$('from-email').value}\n`;
+  text += `Subject: Re: ${$('subject').value}\n`;
+  text += `In-Reply-To: <${Date.now()}@qq.com>\n`;
+  text += `Content-Type: text/html; charset=utf-8\n\n`;
+  text += `Hi ${$('from-name').value}，\n\n`;
+  text += `您的委托已处理完毕，状态：${statusZh}\n`;
+  text += `订单 ID：${orderId}\n`;
+  text += `场景：${final.scenario || 'hotel'} · 商家：${final.organization || ''}\n\n`;
+  text += `【AI 处理纪要】\n${summary}\n\n`;
+  if (result.tried_strategies && result.tried_strategies.length) {
+    text += `【AI 协商策略】${result.tried_strategies.join('、')}\n\n`;
+  }
+  if (result.evaluation) {
+    text += `【AI 表现评分】总分 ${result.evaluation.total}/100\n`;
+    for (const [k, v] of Object.entries(result.evaluation.dimensions || {})) {
+      text += `  · ${v.label || k}: ${v.score}/${v.max}\n`;
+    }
+  }
+  if (result.dialogue && result.dialogue.length) {
+    text += `\n【对话回放（最近 6 轮）】\n`;
+    for (const t of result.dialogue.slice(-6)) {
+      const speaker = t.speaker === 'ai' ? 'AI' : '商家';
+      text += `[${speaker}] ${(t.translated || t.original || '').substring(0, 200)}\n`;
+    }
+  }
+  text += `\n—\nAI 外贸代办 · 邮件代办控制台 · ${new Date().toISOString()}\n`;
+  return text;
+}
+</script>
+</body>
+</html>

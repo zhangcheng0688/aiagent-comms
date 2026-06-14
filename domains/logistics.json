@@ -1,0 +1,184 @@
+{
+  "industry": "logistics",
+  "label": "物流",
+  "common_terms": [
+    "海运 ocean freight",
+    "FCL 整柜",
+    "LCL 拼箱",
+    "空运 air freight",
+    "提单 B/L",
+    "舱位 booking",
+    "截关 closing time",
+    "截港",
+    "滞港费 demurrage",
+    "滞箱费 detention",
+    "改港 diversion",
+    "目的港 POL/POD",
+    "转运 transshipment",
+    "清关 customs clearance",
+    "HS code",
+    "AMS 舱单",
+    "ISF 申报"
+  ],
+  "compliance_requirements": [
+    "AMS 24h",
+    "ISF 10+2",
+    "SOLAS VGM"
+  ],
+  "typical_clients": [
+    "进出口贸易商",
+    "跨境电商",
+    "FOB 货代",
+    "CIF 物流商"
+  ],
+  "scenarios": {
+    "sample_confirm": {
+      "scenario": "sample_confirm",
+      "scenario_label": "样品确认",
+      "scenario_desc": "寄样地址/快递单/样品规格/运费承担",
+      "keywords": [
+        "报价单 quote",
+        "船期 schedule",
+        "截关时间",
+        "提单样本 B/L sample",
+        "舱位确认",
+        "转船点"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "Please quote ocean freight FCL 40HQ from Shanghai (CNSHA) to Hamburg (DEHAM), ETD mid-July, with THC and BAF breakdown."
+        }
+      ],
+      "hard_rule_keywords": [
+        "DDP 报价",
+        "包清关",
+        "包税到门"
+      ],
+      "escalation_threshold": {
+        "pct": 10,
+        "abs": 500,
+        "rounds": 3
+      }
+    },
+    "order_modify": {
+      "scenario": "order_modify",
+      "scenario_label": "订单变更",
+      "scenario_desc": "改交期/改地址/改数量/分批",
+      "keywords": [
+        "改港",
+        "改船期",
+        "改船公司",
+        "舱位变更",
+        "提单变更 B/L amendment",
+        "转运 transshipment",
+        "SOC 箱自备"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "Container MSCU1234567 originally destined for Hamburg, please divert to Rotterdam due to consignee request. Additional cost?"
+        }
+      ],
+      "hard_rule_keywords": [
+        "改港",
+        "全额免滞港费",
+        "退关"
+      ],
+      "escalation_threshold": {
+        "pct": 15,
+        "abs": 3000,
+        "rounds": 3
+      }
+    },
+    "reconciliation": {
+      "scenario": "reconciliation",
+      "scenario_label": "对账",
+      "scenario_desc": "对账单/付款水单/汇率/抹零争议",
+      "keywords": [
+        "对账单",
+        "THC",
+        "BAF",
+        "ISPS",
+        "EBS 燃油",
+        "文件费 DOC fee",
+        "电放费",
+        "改单费 amendment fee"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "Your invoice for booking #BKG-2024-9988 includes ISPS USD 95 and EBS USD 380. Can you provide rate source for these charges?"
+        }
+      ],
+      "hard_rule_keywords": [
+        "少付",
+        "拒付",
+        "拒收账单"
+      ],
+      "escalation_threshold": {
+        "pct": 5,
+        "abs": 500,
+        "rounds": 3
+      }
+    },
+    "price_negotiation": {
+      "scenario": "price_negotiation",
+      "scenario_label": "议价",
+      "scenario_desc": "还价/折扣/批量优惠/账期",
+      "keywords": [
+        "长期协议",
+        "包量 volume commitment",
+        "返点 rebate",
+        "保舱位",
+        "保柜 reserved container"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "We commit 200 FCL/year, monthly average. Current rate USD 2,800/FCL. Can you offer USD 2,500/FCL with guaranteed space during peak season?"
+        }
+      ],
+      "hard_rule_keywords": [
+        "降价 20%",
+        "免文件费"
+      ],
+      "escalation_threshold": {
+        "pct": 15,
+        "abs": 2000,
+        "rounds": 4
+      }
+    },
+    "claim_dispute": {
+      "scenario": "claim_dispute",
+      "scenario_label": "索赔/纠纷",
+      "scenario_desc": "质量异议/延期罚则/INCOTERM 变更",
+      "keywords": [
+        "货损 cargo damage",
+        "短卸 shortage",
+        "错卸",
+        "集装箱损坏",
+        "清关延误",
+        "仓储费",
+        "滞港费承担",
+        "保险理赔"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "Container MSCU1234567 arrived with 12 cartons damaged (water stains). Survey report attached. We claim USD 4,800 per marine cargo insurance policy."
+        }
+      ],
+      "hard_rule_keywords": [
+        "拒赔",
+        "全额赔偿",
+        "起诉"
+      ],
+      "escalation_threshold": {
+        "pct": 30,
+        "abs": 30000,
+        "rounds": 6
+      }
+    }
+  }
+}

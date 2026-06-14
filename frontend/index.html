@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 全权代办沟通 · V1.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { --bg: #f7f5f0; --paper: #fff; --ink: #14171e; --ink-2: #3a4256; --muted: #7c7a72; --primary: #2f6f5e; --primary-soft: #e3efea; --line: #e9e3d6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Outfit', -apple-system, 'PingFang SC', sans-serif; background: var(--bg); color: var(--ink); }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 80px 24px; }
+  h1 { font-size: 36px; font-weight: 600; margin: 0 0 12px; line-height: 1.2; }
+  .sub { color: var(--ink-2); margin: 0 0 40px; font-size: 16px; line-height: 1.5; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 32px 0; }
+  .feature { padding: 20px; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; }
+  .feature h3 { margin: 0 0 6px; font-size: 15px; }
+  .feature p { margin: 0; color: var(--muted); font-size: 13px; }
+  .cta { display: inline-block; padding: 16px 32px; background: var(--primary); color: #fff; border-radius: 10px; text-decoration: none; font-size: 16px; font-weight: 600; }
+  .cta:hover { filter: brightness(1.1); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>AI 全权代办沟通</h1>
+  <p class="sub">用户填中文需求，AI 自主用外语打电话/发短信给境外酒店，结果推回给你。无需在线等候。</p>
+
+  <div class="grid">
+    <div class="feature">
+      <h3>📞 电话 + 短信双通道</h3>
+      <p>短信咨询，电话协商，智能选择</p>
+    </div>
+    <div class="feature">
+      <h3>🌏 英 / 日 / 韩三语</h3>
+      <p>商务敬语自动适配</p>
+    </div>
+    <div class="feature">
+      <h3>🤝 多轮自主协商</h3>
+      <p>对方反提案自动整合推送你决策</p>
+    </div>
+    <div class="feature">
+      <h3>📂 结构化归档</h3>
+      <p>双语对话记录 + 中文总结回执</p>
+    </div>
+  </div>
+
+  <a href="/static/submit.html" class="cta">提交代办需求 →</a>
+
+  <p style="margin-top: 48px; color: var(--muted); font-size: 13px">
+    V1.0 范围：酒店场景 4 类子场景（信息咨询 / 改期 / 取消 / 加床餐食）<br>
+    VOIP / 短信当前为 mock 模式，对话真实跑通
+  </p>
+</div>
+</body>
+</html>

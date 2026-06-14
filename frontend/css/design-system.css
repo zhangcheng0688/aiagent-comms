@@ -1,0 +1,142 @@
+/* V3.0 design-system.css · 全站暗色主题统一 CSS 变量。
+   所有 HTML <link rel="stylesheet" href="/static/css/design-system.css"> 引用。 */
+
+:root {
+  /* === 背景层级 === */
+  --bg: #0b0d12;          /* 主背景 */
+  --panel: #14181f;       /* 卡片背景 */
+  --panel-2: #1c2230;     /* 二级面板 */
+  --panel-3: #252b3b;     /* 三级面板（hover态） */
+  --line: #2a3142;         /* 分割线 */
+
+  /* === 文字 === */
+  --text: #e6ebf3;         /* 主文字 */
+  --text-2: #c0c7d4;       /* 次级文字 */
+  --muted: #8a93a6;        /* 弱化文字 */
+  --disabled: #5a6172;     /* 禁用态 */
+
+  /* === 主题色 === */
+  --accent: #4f8cff;       /* 主色 · 蓝 */
+  --accent-2: #7c5cff;     /* 副色 · 紫 */
+  --accent-3: #2fd4d4;     /* 青 */
+  --gradient: linear-gradient(90deg, var(--accent), var(--accent-2));
+
+  /* === 状态色 === */
+  --ok: #2fd47e;          /* 成功 · 绿 */
+  --warn: #f5a524;        /* 警告 · 橙 */
+  --err: #ff5872;         /* 错误 · 红 */
+  --info: #4f8cff;        /* 信息 · 蓝 */
+
+  /* === 字体 === */
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  --font-mono: "SF Mono", Menlo, Consolas, monospace;
+
+  /* === 字号 === */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --text-2xl: 24px;
+  --text-3xl: 32px;
+  --text-4xl: 48px;
+  --text-5xl: 64px;
+
+  /* === 间距 === */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* === 圆角 === */
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+
+  /* === 阴影 === */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.1);
+  --shadow: 0 2px 8px rgba(0,0,0,0.15);
+  --shadow-lg: 0 4px 24px rgba(0,0,0,0.2);
+  --shadow-xl: 0 8px 48px rgba(0,0,0,0.3);
+
+  /* === 动画 === */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.0, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration: 200ms;
+  --duration-slow: 300ms;
+}
+
+/* === 通用样式 === */
+body {
+  font: var(--text-base)/1.55 var(--font);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.text-muted { color: var(--muted); }
+.text-accent { color: var(--accent); }
+.text-ok { color: var(--ok); }
+.text-warn { color: var(--warn); }
+.text-err { color: var(--err); }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+
+.btn {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--duration) var(--ease);
+}
+.btn:hover { border-color: var(--accent); background: var(--panel-3); }
+.btn-primary {
+  background: var(--gradient);
+  border: 0;
+  color: white;
+  font-weight: 500;
+}
+.btn-primary:hover { opacity: 0.92; }
+
+.input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: var(--text-base);
+}
+.input:focus { outline: none; border-color: var(--accent); }
+
+.status-pill {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+.status-pill.success { background: rgba(47,212,126,0.15); color: var(--ok); }
+.status-pill.failed { background: rgba(255,88,114,0.15); color: var(--err); }
+.status-pill.in_progress { background: rgba(79,140,255,0.15); color: var(--accent); }
+.status-pill.needs_user { background: rgba(245,165,36,0.15); color: var(--warn); }
+.status-pill.pending { background: rgba(138,147,166,0.15); color: var(--muted); }

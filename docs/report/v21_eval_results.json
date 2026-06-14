@@ -1,0 +1,173 @@
+[
+  {
+    "scenario": "hotel",
+    "name": "酒店",
+    "order_id": "ord_v21_2c195c",
+    "status": "in_progress",
+    "rounds": 3,
+    "evaluation": {
+      "total": 54,
+      "engine": "MiniMax-M3",
+      "dimensions": {
+        "etiquette": {
+          "score": 18,
+          "max": 25,
+          "label": "商务话术"
+        },
+        "strategy": {
+          "score": 12,
+          "max": 25,
+          "label": "策略选优"
+        },
+        "concession": {
+          "score": 8,
+          "max": 20,
+          "label": "让步幅度"
+        },
+        "efficiency": {
+          "score": 10,
+          "max": 15,
+          "label": "对话效率"
+        },
+        "satisfaction": {
+          "score": 6,
+          "max": 15,
+          "label": "商家满意度"
+        }
+      },
+      "breakdown": {
+        "etiquette_reason": "敬语体系（です・ます/ございます）使用规范，开场自我介绍和请求转接话术专业礼貌，但多轮中未使用对方姓名/称呼，且未呼应商家已提供的信息，整体略显机械。",
+        "strategy_reason": "未先一次性把'改日期+双床+早餐'全部需求说完，导致3轮只确认了基础信息，效率低；当商家提出加价方案时未立即援引'不可加价'约束进行拒绝或反提案，策略被动。",
+        "concession_reason": "商家已主动让步（提供4800円加价方案），但AI未当场拒绝也未升级给用户，最终状态仍为in_progress，等于0%让步+0%推进，按规则给8分。",
+        "efficiency_reason": "hotel场景平均4轮，当前3轮尚未收单（in_progress），且前两轮问题拆分过细（一次只问一件事），属于无效沟通轮，扣分。",
+        "satisfaction_reason": "商家最后一句使用'申し訳ございません'并给出替代方案，整体属于中性偏配合，但AI未给出任何回应即结束对话，商家处于'等待回复'状态，满意度受限。"
+      },
+      "suggestions": [
+        "第一轮就把全部需求（改日期6.12+双床+免费早餐）一次性说清，并明确告知预算/约束，避免被拆成多轮低效确认。",
+        "商家提出加价方案时，应立即援引用户约束'不可加价'礼貌拒绝，并请求'仅同价位或免费方案'，必要时升级人工而非悬而未决。",
+        "每轮回应应先复述/确认商家已提供的信息（如'15時チェックイン承知いたしました'），再追加新问题，体现倾听与专业度。"
+      ],
+      "radar": [
+        72.0,
+        48.0,
+        40.0,
+        66.66666666666666,
+        40.0
+      ]
+    }
+  },
+  {
+    "scenario": "car_rental",
+    "name": "租车",
+    "order_id": "ord_v21_b4b802",
+    "status": "success",
+    "rounds": 3,
+    "evaluation": {
+      "total": 59,
+      "engine": "MiniMax-M3",
+      "dimensions": {
+        "etiquette": {
+          "score": 12,
+          "max": 25,
+          "label": "商务话术"
+        },
+        "strategy": {
+          "score": 6,
+          "max": 25,
+          "label": "策略选优"
+        },
+        "concession": {
+          "score": 20,
+          "max": 20,
+          "label": "让步幅度"
+        },
+        "efficiency": {
+          "score": 8,
+          "max": 15,
+          "label": "对话效率"
+        },
+        "satisfaction": {
+          "score": 13,
+          "max": 15,
+          "label": "商家满意度"
+        }
+      },
+      "breakdown": {
+        "etiquette_reason": "整体英文商务语气尚可，但出现中文夹杂「确认车型」明显不专业，且首句 [morning/afternoon/evening] 占位符未替换显得机械不自然。",
+        "strategy_reason": "第一轮用电话咨询租车却未提出具体需求，第二轮出现奇怪的车型确认请求，策略混乱，未在合适时机清晰传达需求并收单。",
+        "concession_reason": "商家未加价，AI 在 0% 基础上完成订单，让步幅度评满分。",
+        "efficiency_reason": "car_rental 场景平均约 3 轮，本对话恰好 3 轮，但 AI 第二轮完全无效（重复确认且中英混杂），第三轮总结像是跳步收单，整体效率和质量都不高。",
+        "satisfaction_reason": "商家最后一句 'Understood, I appreciate your time. Have a great day.' 语气积极正面，表示配合良好。"
+      },
+      "suggestions": [
+        "严禁在中英商务对话中夹杂中文（如「确认车型」），保持语种纯净",
+        "第一轮应直接清晰表达需求（车型、天数、地点、取还车时间），而不是等商家问 'How can I help you' 后再说",
+        "移除占位符 [morning/afternoon/evening]，根据实际时间或使用通用问候 'Good day'，避免机械感"
+      ],
+      "radar": [
+        48.0,
+        24.0,
+        100.0,
+        53.333333333333336,
+        86.66666666666667
+      ]
+    }
+  },
+  {
+    "scenario": "flight",
+    "name": "机票",
+    "order_id": "ord_v21_12d890",
+    "status": "success",
+    "rounds": 3,
+    "evaluation": {
+      "total": 54,
+      "engine": "MiniMax-M3",
+      "dimensions": {
+        "etiquette": {
+          "score": 12,
+          "max": 25,
+          "label": "商务话术"
+        },
+        "strategy": {
+          "score": 6,
+          "max": 25,
+          "label": "策略选优"
+        },
+        "concession": {
+          "score": 20,
+          "max": 20,
+          "label": "让步幅度"
+        },
+        "efficiency": {
+          "score": 8,
+          "max": 15,
+          "label": "对话效率"
+        },
+        "satisfaction": {
+          "score": 8,
+          "max": 15,
+          "label": "商家满意度"
+        }
+      },
+      "breakdown": {
+        "etiquette_reason": "英文表达基本礼貌正式，但 AI 第一轮要求换英语客服显得突兀且不专业（商家本就是英语回复），末轮重复自己需求显得机械、缺乏灵活应对。",
+        "strategy_reason": "AI 完全没有针对机票改期场景的策略——既未询问改期费用，也未就商家提出的酒店加价回应或澄清场景错配，错失谈判窗口。",
+        "concession_reason": "商家加价 0%，AI 实际未进行任何价格谈判即结束，让步幅度 0%，满分 20。",
+        "efficiency_reason": "flight 场景平均 4 轮，本对话 3 轮看似略少，但因信息未传递完整（商家提到酒店加价 AI 毫无反应），属于无效短对话而非高效沟通。",
+        "satisfaction_reason": "商家回复礼貌中性（Understood, I appreciate your time），但未明确确认改期成功，最终 success 状态存疑，满意度中等偏低。"
+      },
+      "suggestions": [
+        "第一轮应直接以英文清晰陈述改期需求（出发地、目的地、舱位、日期），而非要求换英语客服，显得业余。",
+        "当商家回复与机票场景明显不符（出现 twin room、deluxe room）时，AI 应立即澄清并重述需求，而非盲目重复原话。",
+        "应在对话中主动询问改期费（rebooking fee）、票价差额及旺季附加费，并尝试争取免费改期或折扣，体现谈判价值。"
+      ],
+      "radar": [
+        48.0,
+        24.0,
+        100.0,
+        53.333333333333336,
+        53.333333333333336
+      ]
+    }
+  }
+]

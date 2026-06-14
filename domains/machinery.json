@@ -1,0 +1,196 @@
+{
+  "industry": "machinery",
+  "label": "机械",
+  "common_terms": [
+    "CNC 加工中心",
+    "数控车床",
+    "激光切割机 laser cutter",
+    "液压系统 hydraulic",
+    "气动 pneumatic",
+    "伺服电机 servo motor",
+    "主轴 spindle",
+    "刀具寿命 tool life",
+    "公差 tolerance",
+    "ISO 9001",
+    "CE 机械指令",
+    "GB 150 压力容器",
+    "BOM 物料清单",
+    "PFMEA 失效分析",
+    "OEE 综合效率"
+  ],
+  "compliance_requirements": [
+    "CE Machinery Directive 2006/42/EC",
+    "ISO 9001",
+    "GB 150"
+  ],
+  "typical_clients": [
+    "汽车零部件厂",
+    "机加工 OEM",
+    "成套设备出口",
+    "航空航天"
+  ],
+  "scenarios": {
+    "sample_confirm": {
+      "scenario": "sample_confirm",
+      "scenario_label": "样品确认",
+      "scenario_desc": "寄样地址/快递单/样品规格/运费承担",
+      "keywords": [
+        "试切件 test cut",
+        "首件首检 FAI",
+        "尺寸报告 dimensional report",
+        "材质证书 material cert",
+        "3D 模型",
+        "图纸 drawing",
+        "机加工余量 machining allowance",
+        "热处理规范"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "We'd like a trial production of 5pcs bracket A2047, material 6061-T6, with full dimensional report and material certificate. Can you confirm lead time and tooling cost?"
+        },
+        {
+          "lang": "ja",
+          "text": "ブラケット A2047 を 5 個試作いただきたいです。材質 6061-T6、寸法報告書と材質証明書が必要です。リードタイムと治具費用をご確認ください。"
+        }
+      ],
+      "hard_rule_keywords": [
+        "免开模费",
+        "DDP",
+        "CIF 价",
+        "免费打样"
+      ],
+      "escalation_threshold": {
+        "pct": 8,
+        "abs": 2000,
+        "rounds": 4
+      }
+    },
+    "order_modify": {
+      "scenario": "order_modify",
+      "scenario_label": "订单变更",
+      "scenario_desc": "改交期/改地址/改数量/分批",
+      "keywords": [
+        "改交期",
+        "分批 partial lot",
+        "改图纸",
+        "工艺变更",
+        "热处理",
+        "表面处理 surface treatment",
+        "电镀 plating",
+        "喷涂 coating",
+        "公差收紧",
+        "批次追溯"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "We need to revise the heat treatment spec from T6 to T5 for batch #M-2204. Please confirm the impact on price and lead time."
+        }
+      ],
+      "hard_rule_keywords": [
+        "退单",
+        "INCOTERM 变更",
+        "订单金额 -30%"
+      ],
+      "escalation_threshold": {
+        "pct": 15,
+        "abs": 10000,
+        "rounds": 4
+      }
+    },
+    "reconciliation": {
+      "scenario": "reconciliation",
+      "scenario_label": "对账",
+      "scenario_desc": "对账单/付款水单/汇率/抹零争议",
+      "keywords": [
+        "对账单",
+        "付款水单",
+        "运费分摊",
+        "包装费 packaging",
+        "保险费",
+        "工时 overtime",
+        "加班费",
+        "尾款"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "Your statement shows packaging USD 380 and insurance USD 220 separately, but our PO includes these. Please amend the invoice."
+        }
+      ],
+      "hard_rule_keywords": [
+        "少付",
+        "尾款延期 30 天",
+        "拒付"
+      ],
+      "escalation_threshold": {
+        "pct": 5,
+        "abs": 2000,
+        "rounds": 3
+      }
+    },
+    "price_negotiation": {
+      "scenario": "price_negotiation",
+      "scenario_label": "议价",
+      "scenario_desc": "还价/折扣/批量优惠/账期",
+      "keywords": [
+        "还价",
+        "工时费",
+        "材料费波动",
+        "批量优惠",
+        "年度协议 annual contract",
+        "模具费 amortize",
+        "模具摊销"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "Current quote USD 8,500/pc. We commit to 2,000pcs over 12 months. Can you offer 8% discount and amortize the tooling cost over the first 500pcs?"
+        }
+      ],
+      "hard_rule_keywords": [
+        "降价 15%",
+        "免模具费",
+        "账期 120 天"
+      ],
+      "escalation_threshold": {
+        "pct": 8,
+        "abs": 5000,
+        "rounds": 6
+      }
+    },
+    "claim_dispute": {
+      "scenario": "claim_dispute",
+      "scenario_label": "索赔/纠纷",
+      "scenario_desc": "质量异议/延期罚则/INCOTERM 变更",
+      "keywords": [
+        "不合格 non-conformance",
+        "退货",
+        "换货 replacement",
+        "第三方检测",
+        "SGS 报告",
+        "TUV 认证",
+        "现场服务 on-site service",
+        "召回 recall"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "5% of the delivered batch showed surface cracks after 2 weeks operation. Per warranty clause 4.1, we request free replacement and on-site inspection by your engineer."
+        }
+      ],
+      "hard_rule_keywords": [
+        "拒收全批",
+        "全额退款",
+        "起诉",
+        "仲裁"
+      ],
+      "escalation_threshold": {
+        "pct": 30,
+        "abs": 80000,
+        "rounds": 6
+      }
+    }
+  }
+}

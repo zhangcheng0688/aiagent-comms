@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI 全权代办沟通</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { --bg: #f7f5f0; --paper: #fff; --ink: #14171e; --ink-2: #3a4256; --muted: #7c7a72; --primary: #2f6f5e; --primary-soft: #e3efea; --line: #e9e3d6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Outfit', -apple-system, 'PingFang SC', sans-serif; background: var(--bg); color: var(--ink); padding: 0; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1 { font-size: 32px; font-weight: 600; margin: 0 0 8px; }
+  .sub { color: var(--ink-2); margin: 0 0 32px; font-size: 15px; }
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .label { display: block; font-size: 13px; color: var(--ink-2); font-weight: 500; margin-bottom: 6px; }
+  .input, .textarea, .select { width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; font-size: 15px; font-family: inherit; background: var(--bg); }
+  .input:focus, .textarea:focus, .select:focus { outline: 2px solid var(--primary); outline-offset: -1px; background: #fff; }
+  .textarea { min-height: 100px; resize: vertical; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .submit { display: block; width: 100%; padding: 16px; background: var(--primary); color: #fff; border: 0; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .submit:hover { filter: brightness(1.1); }
+  .submit:disabled { opacity: 0.5; cursor: not-allowed; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .chip { padding: 6px 12px; background: var(--primary-soft); color: var(--primary); border-radius: 16px; font-size: 13px; cursor: pointer; border: 0; }
+  .chip:hover { background: var(--primary); color: #fff; }
+  .back { display: inline-block; color: var(--muted); text-decoration: none; font-size: 14px; margin-bottom: 16px; }
+  .result { padding: 16px; background: var(--primary-soft); border-radius: 8px; margin-top: 16px; display: none; }
+  .result.show { display: block; }
+  .intent-item { padding: 8px 12px; background: #fff; border-radius: 6px; margin: 4px 0; border: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/static/index.html" class="back">← 返回首页</a>
+  <h1>AI 全权代办沟通</h1>
+  <p class="sub">提交中文需求，AI 自主用外语与境外酒店沟通，结果推回给你</p>
+
+  <form id="orderForm">
+    <div class="card">
+      <div class="label">目标机构名称</div>
+      <input class="input" id="organization" required placeholder="例：大阪心斋桥大和鲁内酒店" value="大阪心斋桥大和鲁内酒店" />
+
+      <div style="height: 16px"></div>
+
+      <div class="row">
+        <div>
+          <div class="label">国家区号</div>
+          <select class="select" id="countryCode">
+            <option value="+81" selected>日本 +81</option>
+            <option value="+82">韩国 +82</option>
+            <option value="+1">美国/加拿大 +1</option>
+            <option value="+44">英国 +44</option>
+            <option value="+65">新加坡 +65</option>
+          </select>
+        </div>
+        <div>
+          <div class="label">境外联系号码</div>
+          <input class="input" id="phoneNumber" required placeholder="例：0661234567" value="0661234567" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">中文代办需求</div>
+      <textarea class="textarea" id="requirement" required placeholder="例：帮我致电酒店改入住 6.12 双床+免费早餐"></textarea>
+      <div class="chips">
+        <button type="button" class="chip" onclick="fillExample('帮我致电酒店改入住 6.12，确认双床+免费早餐')">酒店改单</button>
+        <button type="button" class="chip" onclick="fillExample('请帮我确认这个酒店是否含早餐和停车')">信息咨询</button>
+        <button type="button" class="chip" onclick="fillExample('帮我取消这个预订，理由是和行程冲突')">取消预订</button>
+        <button type="button" class="chip" onclick="fillExample('请帮我加一张床和儿童早餐')">加床加餐</button>
+        <button type="button" class="chip" onclick="fillExample('我想租一辆经济型车，6.12 取车 6.15 还车，机场取还，含全险')">租车示例</button>
+        <button type="button" class="chip" onclick="fillExample('我的航班想改签到 6.15，并升舱到商务舱')">机票改签</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="label">特殊约束（可选）</div>
+      <textarea class="textarea" id="constraints" style="min-height: 60px" placeholder="例：不可加价；必须免费取消"></textarea>
+    </div>
+
+    <div class="card">
+      <div class="label">场景（V1.1：新增租车/机票）</div>
+      <select class="select" id="scenario">
+        <option value="hotel" selected>酒店 (Hotel)</option>
+        <option value="car_rental">租车 (Car Rental)</option>
+        <option value="flight">机票 (Flight)</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <div class="label">优先沟通通道</div>
+      <select class="select" id="preferredChannel">
+        <option value="sms" selected>短信（咨询/简单变更）</option>
+        <option value="voice">电话（复杂变更/协商）</option>
+      </select>
+    </div>
+
+    <button type="submit" class="submit" id="submitBtn">提交并启动 AI 代办</button>
+  </form>
+
+  <div class="result" id="result">
+    <h3 style="margin-top:0">✅ 需求已提交</h3>
+    <p>订单 ID：<code id="resultOrderId"></code></p>
+    <p>已识别语种：<strong id="resultLang"></strong></p>
+    <div>
+      <strong>拆解的意图项：</strong>
+      <div id="resultIntents"></div>
+    </div>
+    <div style="margin-top: 16px">
+      <a id="resultLink" href="#" class="submit" style="text-align:center; text-decoration:none; display:inline-block; width:auto; padding: 10px 24px">查看订单进度 →</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function fillExample(text) {
+  document.getElementById('requirement').value = text;
+}
+
+document.getElementById('orderForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '提交中...';
+
+  const payload = {
+    organization: document.getElementById('organization').value,
+    contact_number: document.getElementById('countryCode').value + document.getElementById('phoneNumber').value,
+    requirement: document.getElementById('requirement').value,
+    constraints: document.getElementById('constraints').value || null,
+    preferred_channel: document.getElementById('preferredChannel').value,
+    scenario: document.getElementById('scenario').value,
+  };
+
+  try {
+    const resp = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) throw new Error(await resp.text());
+    const data = await resp.json();
+
+    document.getElementById('resultOrderId').textContent = data.order_id;
+    document.getElementById('resultLang').textContent = data.target_language;
+    document.getElementById('resultIntents').innerHTML = data.intents.map(i =>
+      `<div class="intent-item"><strong>${i.type}</strong>: ${i.description}${i.target_value ? ' → ' + i.target_value : ''}</div>`
+    ).join('');
+    document.getElementById('resultLink').href = '/order/' + data.order_id;
+    document.getElementById('result').classList.add('show');
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+  } catch (err) {
+    alert('提交失败: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '提交并启动 AI 代办';
+  }
+});
+</script>
+</body>
+</html>

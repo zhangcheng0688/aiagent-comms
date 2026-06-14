@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>AI 全权代办沟通 · 种子客户 Pitch</title>
+<style>
+  :root {
+    --bg: #0b0d12;
+    --panel: #14181f;
+    --panel-2: #1c2230;
+    --line: #2a3142;
+    --text: #e6ebf3;
+    --muted: #8a93a6;
+    --accent: #4f8cff;
+    --accent-2: #7c5cff;
+    --ok: #2fd47e;
+    --warn: #f5a524;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font: 14px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    padding: 0;
+  }
+  .slide {
+    width: 1280px;
+    min-height: 720px;
+    margin: 0 auto;
+    padding: 48px 64px;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+  .slide::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 80% 0%, rgba(124,92,255,0.15), transparent 40%),
+      radial-gradient(circle at 0% 100%, rgba(79,140,255,0.12), transparent 40%);
+    pointer-events: none;
+  }
+  .topline {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 32px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .topline .dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  h1 {
+    font-size: 56px;
+    line-height: 1.1;
+    margin: 0 0 16px;
+    font-weight: 600;
+    background: linear-gradient(90deg, #fff 0%, #a8b3d3 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  h1 .accent {
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .subtitle {
+    font-size: 22px;
+    color: var(--muted);
+    margin: 0 0 48px;
+    line-height: 1.4;
+  }
+  .grid {
+    display: grid;
+    gap: 24px;
+  }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 24px 28px;
+  }
+  .card h3 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .card .big {
+    font-size: 48px;
+    font-weight: 600;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+    margin: 8px 0 12px;
+  }
+  .card p {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.5;
+    font-size: 14px;
+  }
+  .card .sub { color: var(--muted); font-size: 12px; }
+  .case-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .case-card .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .case-card .head .scenario {
+    font-weight: 600;
+    font-size: 16px;
+  }
+  .case-card .head .badge {
+    background: var(--ok);
+    color: #0b0d12;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .case-card .meta {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .case-card .flow {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 12px;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+  .case-card .flow .arrow { color: var(--accent); }
+  .case-card .flow .v12 { color: var(--muted); text-decoration: line-through; opacity: 0.6; }
+  .case-card .flow .llm { color: var(--accent); font-weight: 500; }
+  .case-card .quote {
+    font-size: 12px;
+    color: var(--text);
+    background: var(--panel-2);
+    padding: 8px 10px;
+    border-left: 2px solid var(--accent-2);
+    border-radius: 0 6px 6px 0;
+  }
+  .case-card .quote b { color: var(--accent-2); }
+
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .compare-row > div {
+    padding: 24px 28px;
+  }
+  .compare-row .left { background: var(--panel); }
+  .compare-row .right { background: linear-gradient(135deg, rgba(79,140,255,0.08), rgba(124,92,255,0.08)); border-left: 1px solid var(--line); }
+  .compare-row h4 {
+    margin: 0 0 16px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+  .compare-row .right h4 { color: var(--accent); }
+  .compare-row ul {
+    margin: 0; padding: 0; list-style: none;
+  }
+  .compare-row li {
+    padding: 6px 0;
+    padding-left: 20px;
+    position: relative;
+    font-size: 14px;
+  }
+  .compare-row li::before {
+    content: "•";
+    position: absolute;
+    left: 6px;
+    color: var(--muted);
+  }
+  .compare-row .right li::before { color: var(--accent); }
+
+  .footer-bar {
+    position: absolute;
+    bottom: 24px;
+    left: 64px;
+    right: 64px;
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 12px;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+  .footer-bar b { color: var(--text); font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="slide">
+  <div class="topline">
+    <div class="dot"></div>
+    <div>AI 全权代办沟通 · 种子客户 Pitch</div>
+  </div>
+
+  <h1>用户一句话，<br/>AI <span class="accent">替您打电话搞定</span>海外商家。</h1>
+  <p class="subtitle">跨境出行业务的「AI 全权电话+短信双语代办」底座<br/>面向中小外贸商户 · 真实可用 · 真 LLM 驱动</p>
+
+  <!-- 核心数字 -->
+  <div class="grid grid-3" style="margin-bottom: 32px;">
+    <div class="card">
+      <h3>真 LLM 决策</h3>
+      <div class="big">MiniMax-M3</div>
+      <p>不是规则回放。<b>4/4 高难度 case</b> 中 LLM 给出比 V1.2 规则更聪明的策略</p>
+    </div>
+    <div class="card">
+      <h3>多语种 / 多场景</h3>
+      <div class="big">4 × 3</div>
+      <p>中 / 日 / 英 / 韩 4 语言，酒店 / 租车 / 机票 3 场景，语音 + SMS 2 通道</p>
+    </div>
+    <div class="card">
+      <h3>协商策略库</h3>
+      <div class="big">6 策略</div>
+      <p>hold_position / alt_date / value_trade / chain_offer / loyalty / walk_away，<b>场景化升级阈值</b></p>
+    </div>
+  </div>
+
+  <!-- 4 案例对比 -->
+  <div class="grid grid-4" style="margin-bottom: 32px;">
+    <div class="case-card">
+      <div class="head">
+        <div class="scenario">Case 1 · 酒店</div>
+        <div class="badge">成交</div>
+      </div>
+      <div class="meta">日 · 硬约束 +24%</div>
+      <div class="flow">
+        <span class="v12">V1.2: hold</span>
+        <span class="arrow">→</span>
+        <span class="llm">M3: alt_date</span>
+      </div>
+      <div class="quote"><b>🧠</b> 主动探邻日，避开加价</div>
+    </div>
+    <div class="case-card">
+      <div class="head">
+        <div class="scenario">Case 2 · 租车</div>
+        <div class="badge">成交</div>
+      </div>
+      <div class="meta">英 · 无约束 +35%</div>
+      <div class="flow">
+        <span class="v12">V1.2: value_trade</span>
+        <span class="arrow">→</span>
+        <span class="llm">M3: chain_offer</span>
+      </div>
+      <div class="quote"><b>🧠</b> 打包换车型，-17%</div>
+    </div>
+    <div class="case-card">
+      <div class="head">
+        <div class="scenario">Case 3 · 机票</div>
+        <div class="badge">成交</div>
+      </div>
+      <div class="meta">英 · 旺季 +42%</div>
+      <div class="flow">
+        <span class="v12">V1.2: value_trade</span>
+        <span class="arrow">→</span>
+        <span class="llm">M3: chain_offer</span>
+      </div>
+      <div class="quote"><b>🧠</b> 捆绑升级，¥35k→¥10k</div>
+    </div>
+    <div class="case-card">
+      <div class="head">
+        <div class="scenario">Case 4 · 酒店</div>
+        <div class="badge">成交</div>
+      </div>
+      <div class="meta">日 · 硬约束+满</div>
+      <div class="flow">
+        <span class="v12">V1.2: walk_away</span>
+        <span class="arrow">→</span>
+        <span class="llm">M3: alt_date</span>
+      </div>
+      <div class="quote"><b>🧠</b> 扩大搜索不死心</div>
+    </div>
+  </div>
+
+  <!-- 对比条 -->
+  <div class="compare-row" style="margin-bottom: 24px;">
+    <div class="left">
+      <h4>现在</h4>
+      <ul>
+        <li>用户自己打国际长途，时区语言双重障碍</li>
+        <li>商家英语客服听不惯，30% 加价直接被迫接受</li>
+        <li>改签/续住/换车型每次 30-60 分钟</li>
+        <li>旺季机票改签人均 ¥30k+ 加价损失</li>
+      </ul>
+    </div>
+    <div class="right">
+      <h4>用 AI 之后</h4>
+      <ul>
+        <li>用户一句话需求，AI 全程代办</li>
+        <li>真人级商务话术，日韩英无障碍</li>
+        <li>6 策略 LLM 实时决策，平均 -17% 加价</li>
+        <li>降级安全网：LLM 挂掉也能用 V1.2 规则</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 路线图 -->
+  <div class="card" style="background: var(--panel-2); border-color: var(--accent); margin-bottom: 24px;">
+    <h3 style="color: var(--accent);">下一步</h3>
+    <div class="grid grid-4" style="margin-top: 8px; font-size: 13px;">
+      <div><b style="color:var(--ok)">▸ 接 Twilio 真号</b><br/>1 通真电话演示</div>
+      <div><b>▸ V2.1 质量评估</b><br/>LLM 评 LLM，种子客户可看 AI 表现分</div>
+      <div><b>▸ 阿里云 SMS 集成</b><br/>国内商户侧通知</div>
+      <div><b>▸ 种子 onboarding</b><br/>从商务 4 配套文档拆客户成功路径</div>
+    </div>
+  </div>
+
+  <div class="footer-bar">
+    <div><b>AI 全权代办沟通</b> · 跨境出行业务底座</div>
+    <div>2026-06-08 · 真 MiniMax-M3 跑通</div>
+  </div>
+</div>
+</body>
+</html>

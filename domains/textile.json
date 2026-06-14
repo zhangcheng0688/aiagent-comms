@@ -1,0 +1,186 @@
+{
+  "industry": "textile",
+  "label": "纺织",
+  "common_terms": [
+    "克重 GSM",
+    "纱支 yarn count",
+    "密度 density",
+    "涤纶 polyester",
+    "棉 cotton",
+    "锦纶 nylon",
+    "氨纶 spandex",
+    "OEKO-TEX 100",
+    "GOTS 有机棉",
+    "色牢度 color fastness",
+    "缩水率 shrinkage",
+    "起球 pilling",
+    "色差 color deviation",
+    "FOB 宁波",
+    "FOB 青岛",
+    "CIF 汉堡"
+  ],
+  "compliance_requirements": [
+    "OEKO-TEX 100",
+    "GOTS",
+    "BSCI 验厂",
+    "ZDHC"
+  ],
+  "typical_clients": [
+    "ZARA/H&M 供应商",
+    "运动品牌",
+    "家纺品牌",
+    "服装电商"
+  ],
+  "scenarios": {
+    "sample_confirm": {
+      "scenario": "sample_confirm",
+      "scenario_label": "样品确认",
+      "scenario_desc": "寄样地址/快递单/样品规格/运费承担",
+      "keywords": [
+        "色卡 color card",
+        "布样 fabric sample",
+        "手感",
+        "克重 GSM",
+        "缩水率",
+        "色牢度报告",
+        "起球测试",
+        "样卡 Y/N"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "Please send 0.5m fabric swatch of item TX-2024-088, GSM 180, color Pantone 19-4052. We'll test shrinkage and color fastness before placing bulk order."
+        }
+      ],
+      "hard_rule_keywords": [
+        "免快递费",
+        "DDP",
+        "快递费到付"
+      ],
+      "escalation_threshold": {
+        "pct": 5,
+        "abs": 500,
+        "rounds": 4
+      }
+    },
+    "order_modify": {
+      "scenario": "order_modify",
+      "scenario_label": "订单变更",
+      "scenario_desc": "改交期/改地址/改数量/分批",
+      "keywords": [
+        "改色号",
+        "改克重",
+        "加印 logo",
+        "改包装",
+        "延期",
+        "分批",
+        "快反 small batch"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "Bulk order #T-2024-456: we'd like to change color from Pantone 19-4052 to 14-4002 for 30% of the quantity, rest as original. Can you accept split shipment?"
+        }
+      ],
+      "hard_rule_keywords": [
+        "退单",
+        "INCOTERM 变更",
+        "订单 -50%"
+      ],
+      "escalation_threshold": {
+        "pct": 10,
+        "abs": 3000,
+        "rounds": 4
+      }
+    },
+    "reconciliation": {
+      "scenario": "reconciliation",
+      "scenario_label": "对账",
+      "scenario_desc": "对账单/付款水单/汇率/抹零争议",
+      "keywords": [
+        "对账单",
+        "水单",
+        "色差损耗",
+        "短装 shortage",
+        "溢装 overage",
+        "包装差异",
+        "纸箱唛头"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "Our receiving count shows 3,800pcs vs your invoice 4,000pcs. Please investigate the shortage and provide photo evidence."
+        }
+      ],
+      "hard_rule_keywords": [
+        "少付",
+        "拒付",
+        "对账有争议"
+      ],
+      "escalation_threshold": {
+        "pct": 5,
+        "abs": 1000,
+        "rounds": 3
+      }
+    },
+    "price_negotiation": {
+      "scenario": "price_negotiation",
+      "scenario_label": "议价",
+      "scenario_desc": "还价/折扣/批量优惠/账期",
+      "keywords": [
+        "还价",
+        "量大优惠",
+        "年度协议",
+        "长单 long-term order",
+        "锁价 lock-in price",
+        "原材料联动"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "Annual commitment 500,000pcs across 4 collections. Current USD 3.20/pc. We seek USD 2.85/pc with raw material index-linked pricing."
+        }
+      ],
+      "hard_rule_keywords": [
+        "降价 15%",
+        "锁价 12 个月",
+        "账期 90 天"
+      ],
+      "escalation_threshold": {
+        "pct": 8,
+        "abs": 2000,
+        "rounds": 6
+      }
+    },
+    "claim_dispute": {
+      "scenario": "claim_dispute",
+      "scenario_label": "索赔/纠纷",
+      "scenario_desc": "质量异议/延期罚则/INCOTERM 变更",
+      "keywords": [
+        "色差 color deviation",
+        "缩水超标",
+        "起球严重",
+        "克重不足",
+        "有害物质 chemical",
+        "REACH 违规",
+        "退货"
+      ],
+      "phrasebook": [
+        {
+          "lang": "en",
+          "text": "Third-party SGS test shows REACH SVHC 0.13% exceeds 0.1% limit. Per our contract, this batch is rejected. We request full refund and disposal guidance."
+        }
+      ],
+      "hard_rule_keywords": [
+        "拒收全批",
+        "全额退款",
+        "起诉"
+      ],
+      "escalation_threshold": {
+        "pct": 30,
+        "abs": 20000,
+        "rounds": 6
+      }
+    }
+  }
+}

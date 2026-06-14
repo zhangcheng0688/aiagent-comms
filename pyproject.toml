@@ -1,0 +1,20 @@
+[mypy]
+python_version = 3.11
+warn_unused_configs = true
+ignore_missing_imports = true
+no_strict_optional = true
+warn_redundant_casts = true
+files = backend, sdk, domains
+exclude = [
+    backend/__pycache__,
+    ".venv",
+    "data",
+    "docs",
+]
+
+[tool:bandit]
+exclude_dirs = [".venv", "data", "docs", "__pycache__"]
+skips = ["B101"]  # 允许 assert（demo 阶段）
+
+[tool:safety]
+continue_on_vulnerability_error = true
