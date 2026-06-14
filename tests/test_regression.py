@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
-PYTHON = ROOT / ".venv" / "bin" / "python"
+PYTHON = sys.executable  # 兼容 CI：GitHub Actions 不一定使用 .venv
 
 # 这些脚本不依赖真实 LLM / 外部服务，可在 CI 中稳定通过
 MOCK_SCRIPTS = [
