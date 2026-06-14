@@ -36,6 +36,7 @@ from datetime import datetime, timezone
 from email.message import EmailMessage
 from email.utils import parseaddr, parsedate_to_datetime
 from pathlib import Path
+from typing import Optional
 
 import httpx
 
@@ -123,7 +124,7 @@ class EmailParser:
 
     def parse(self, raw_email_bytes: bytes) -> ParsedOrder:
         from email import policy
-        msg = email.message_from_bytes(raw_email_bytes, policy=policy.default)
+        msg = email.message_from_bytes(raw_email_bytes, policy=policy.default)  # type: ignore[arg-type]
         from_name, from_addr = self._parseaddr_robust(msg.get("From", ""))
         subject = self._decode_header(msg.get("Subject", ""))
         message_id = str(msg.get("Message-ID", ""))
@@ -414,7 +415,7 @@ class IMAPClient:
             self.connect()
 
         def _fetch_uid(uid: bytes) -> tuple[bytes, str, str] | None:
-            typ, msg_data = self.imap.fetch(uid, "(RFC822 UID)")
+            typ, msg_data = self.imap.fetch(uid, "(RFC822 UID)")  # type: ignore[arg-type]
             if typ != "OK" or not msg_data:
                 return None
             # 找带 UID 的 fetch response

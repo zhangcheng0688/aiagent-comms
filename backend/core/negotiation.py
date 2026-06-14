@@ -26,6 +26,7 @@ class NegotiationContext:
     last_strategy_id: str | None  # 上一轮 AI 用的策略
     tried_strategies: List[str] = field(default_factory=list)  # 已用过的策略
     bundle_items: List[str] = field(default_factory=list)  # 链式反提案可用的 bundle 项
+    _last_strategy_succeeded: bool = False  # 上一轮策略是否成功
 
 
 def detect_constraints(constraints: str | None) -> Dict[str, bool]:

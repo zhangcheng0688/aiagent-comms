@@ -441,7 +441,7 @@ async def twilio_gather_webhook(request: Request):
     speech = form.get("SpeechResult", "")
     confidence = form.get("Confidence", "0")
     log.info(f"twilio.gather call_sid={call_sid} conf={confidence}")
-    handle_twilio_gather_webhook(call_sid, speech)
+    handle_twilio_gather_webhook(str(call_sid), str(speech))
     resp = VoiceResponse()
     resp.hangup()
     return Response(content=str(resp), media_type="application/xml")
