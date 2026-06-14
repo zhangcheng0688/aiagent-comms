@@ -1,20 +1,27 @@
-[mypy]
-python_version = 3.11
+[tool.mypy]
+python_version = "3.11"
 warn_unused_configs = true
 ignore_missing_imports = true
 no_strict_optional = true
 warn_redundant_casts = true
-files = backend, sdk, domains
+files = ["backend", "sdk", "domains"]
 exclude = [
-    backend/__pycache__,
+    "backend/__pycache__",
     ".venv",
     "data",
     "docs",
 ]
 
-[tool:bandit]
+[tool.bandit]
 exclude_dirs = [".venv", "data", "docs", "__pycache__"]
 skips = ["B101"]  # 允许 assert（demo 阶段）
 
-[tool:safety]
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-v --tb=short"
+
+[tool.safety]
 continue_on_vulnerability_error = true
