@@ -288,6 +288,21 @@ class Storage:
                 return None
             return round(sum(totals) / len(totals), 1)
 
+    async def count_evaluated_orders(self, org_id: str | None = None) -> int:
+        async with aiosqlite.connect(self.db_path) as db:
+            if org_id:
+                async with db.execute(
+                    "SELECT COUNT(*) FROM orders WHERE org_id=? AND result_json LIKE '%evaluation%'",
+                    (org_id,),
+                ) as cur:
+                    row = await cur.fetchone()
+            else:
+                async with db.execute(
+                    "SELECT COUNT(*) FROM orders WHERE result_json LIKE '%evaluation%'"
+                ) as cur:
+                    row = await cur.fetchone()
+            return row[0] if row else 0
+
     async def create_proposal(self, order_id: str, proposal) -> None:
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute(

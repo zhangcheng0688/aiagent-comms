@@ -403,6 +403,7 @@ async def metrics(auth: tuple[User, Org] | None = Depends(optional_user)):
     total = await storage.count_orders(org_id=org_id)
     by_status = await storage.count_orders_by_status(org_id=org_id)
     avg_eval = await storage.avg_evaluation_total(org_id=org_id)
+    eval_samples = await storage.count_evaluated_orders(org_id=org_id)
     return {
         "orders": {
             "total": total,
@@ -411,7 +412,7 @@ async def metrics(auth: tuple[User, Org] | None = Depends(optional_user)):
         },
         "ai_quality": {
             "avg_evaluation_total": avg_eval,
-            "samples": "未实现",
+            "samples": eval_samples,
         },
         "scope": "org" if org_id else "global",
     }

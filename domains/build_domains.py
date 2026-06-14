@@ -396,7 +396,7 @@ BUILDERS = {
 
 
 def main():
-    base = Path("/Users/chenwanyi/Documents/mini Max/aiagent-comms")
+    base = Path(__file__).resolve().parent.parent
     domains_dir = base / "domains"
     domains_dir.mkdir(exist_ok=True)
 

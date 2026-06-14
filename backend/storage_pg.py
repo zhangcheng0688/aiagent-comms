@@ -287,6 +287,18 @@ class PostgresStorage:
                 return None
             return round(sum(totals) / len(totals), 1)
 
+    async def count_evaluated_orders(self, org_id: str | None = None) -> int:
+        await self._ensure_pool()
+        async with self.pool.acquire() as conn:
+            if org_id:
+                return await conn.fetchval(
+                    "SELECT COUNT(*) FROM orders WHERE org_id=$1 AND result_json::text LIKE '%evaluation%'",
+                    org_id,
+                )
+            return await conn.fetchval(
+                "SELECT COUNT(*) FROM orders WHERE result_json::text LIKE '%evaluation%'"
+            )
+
     @staticmethod
     def _row_to_order(row: dict) -> Order:
         return Order(
