@@ -1,0 +1,26 @@
+# =============================================================================
+# aiagent-comms 开发 / 测试 / 报告工具
+# 安装：pip install -r requirements.txt -r requirements-dev.txt
+# =============================================================================
+
+# Testing
+pytest==8.3.5
+pytest-asyncio==0.24.0
+httpx==0.27.2
+
+# Lint & security
+mypy==1.15.0
+bandit==1.9.4
+safety==3.8.1
+
+# PDF report generation
+reportlab==4.5.1
+Pillow==12.2.0
+
+# Browser automation / screenshots
+playwright==1.60.0
+
+# Misc utilities referenced in tests & scripts
+loguru==0.7.3
+Markdown==3.10.2
+nltk==3.9.4
