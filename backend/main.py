@@ -16,9 +16,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 
 from .config import HOST, PORT
-from .models import Order, OrderCreate, OrderState, OrderStatus, NegotiationProposal, IntentSlot, DialogueTurn
+from .models import (
+    Order, OrderCreate, OrderState, OrderStatus, NegotiationProposal, IntentSlot, DialogueTurn,
+    Lead, LeadCreate, LeadStatus, OutreachResult,
+)
 from .storage_backend import storage, get_storage_backend
 from .core.intent_parser import parse_intent, detect_target_language, detect_scenario
+from .agents.outbound.lead_source import default_sample_source, import_leads
+from .agents.outbound.email_generator import generate_outreach_email
+from .agents.outbound.sender import send_outreach_email
+from .agents.outbound.inbound_handler import handle_inbound_email
 from .core.dialogue import DialogueEngine
 from .core.evaluator import evaluate_order, score_to_dict
 from .channels.voice import VoiceChannel, handle_twilio_gather_webhook
@@ -416,6 +423,91 @@ async def metrics(auth: tuple[User, Org] | None = Depends(optional_user)):
         },
         "scope": "org" if org_id else "global",
     }
+
+
+# === Outbound Sales Agent 路由 ===
+@app.post("/api/leads/import")
+async def import_sample_leads(auth: tuple[User, Org] | None = Depends(optional_user)):
+    """导入本地 cable 示例线索。"""
+    org_id = auth[1].id if auth else None
+    user_id = auth[0].id if auth else None
+    created, skipped = await import_leads(
+        default_sample_source(), org_id=org_id, user_id=user_id
+    )
+    return {"created": created, "skipped": skipped}
+
+
+@app.get("/api/leads")
+async def list_leads(
+    status: str | None = None,
+    limit: int = 100,
+    auth: tuple[User, Org] | None = Depends(optional_user),
+):
+    """线索列表。"""
+    org_id = auth[1].id if auth else None
+    leads = await storage.list_leads(status=status, limit=limit, org_id=org_id)
+    return [l.model_dump(mode="json") for l in leads]
+
+
+@app.get("/api/leads/funnel")
+async def leads_funnel(auth: tuple[User, Org] | None = Depends(optional_user)):
+    """线索漏斗统计。"""
+    org_id = auth[1].id if auth else None
+    counts = await storage.count_leads_by_status(org_id=org_id)
+    total = sum(counts.values())
+    return {"total": total, "by_status": counts, "scope": "org" if org_id else "global"}
+
+
+@app.post("/api/leads/{lead_id}/outreach", response_model=OutreachResult)
+async def outreach_lead(
+    lead_id: str,
+    payload: dict | None = None,
+    auth: tuple[User, Org] | None = Depends(optional_user),
+):
+    """对单个线索生成并发送开发信。"""
+    org_id = auth[1].id if auth else None
+    lead = await storage.get_lead(lead_id)
+    if not lead:
+        raise HTTPException(404, "线索不存在")
+    if org_id and lead.org_id and lead.org_id != org_id:
+        raise HTTPException(403, "无权操作此线索")
+
+    dry_run = (payload or {}).get("dry_run", False)
+    scenario = (payload or {}).get("scenario") or lead.scenario
+    email = await generate_outreach_email(lead, scenario=scenario)
+    result = await send_outreach_email(lead, email["subject"], email["body"], dry_run=dry_run)
+    return OutreachResult(
+        lead_id=lead_id,
+        sent=result["sent"],
+        subject=email["subject"],
+        body=email["body"],
+        mode=result["mode"],
+        error=result.get("error"),
+    )
+
+
+@app.post("/api/leads/{lead_id}/simulate-reply")
+async def simulate_lead_reply(lead_id: str, payload: dict, auth: tuple[User, Org] | None = Depends(optional_user)):
+    """模拟收到一封潜客回复（用于测试 inbound 处理）。"""
+    org_id = auth[1].id if auth else None
+    lead = await storage.get_lead(lead_id)
+    if not lead:
+        raise HTTPException(404, "线索不存在")
+    if org_id and lead.org_id and lead.org_id != org_id:
+        raise HTTPException(403, "无权操作此线索")
+
+    subject = payload.get("subject", "Re: Sample request")
+    body = payload.get("body", "")
+    from_name = lead.contact_name or lead.company_name
+    raw = (
+        f"From: \"{from_name}\" <{lead.email}>\n"
+        f"To: outbound@aiagent.example.com\n"
+        f"Subject: {subject}\n"
+        f"Content-Type: text/plain; charset=utf-8\n\n"
+        f"{body}"
+    ).encode("utf-8")
+    result = await handle_inbound_email(raw)
+    return result
 
 
 # 静态前端

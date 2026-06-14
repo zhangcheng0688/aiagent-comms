@@ -1,0 +1,112 @@
+[
+  {
+    "source": "sample_cable",
+    "industry": "cable",
+    "company_name": "Pacific Wire & Cable Co., Ltd.",
+    "contact_name": "Michael Thompson",
+    "email": "m.thompson@pacificwire.example.com",
+    "country": "USA",
+    "website": "https://pacificwire.example.com",
+    "scenario": "sample_confirm",
+    "notes": "洛杉矶分销商，年采购量约 50 万米低压电缆"
+  },
+  {
+    "source": "sample_cable",
+    "industry": "cable",
+    "company_name": "東京電線商事株式会社",
+    "contact_name": "田中 健一",
+    "email": "tanaka@tokyodenwire.example.com",
+    "country": "Japan",
+    "website": "https://tokyodenwire.example.com",
+    "scenario": "price_negotiation",
+    "notes": "日本贸易商，关注 XLPE 绝缘和 JIS 认证"
+  },
+  {
+    "source": "sample_cable",
+    "industry": "cable",
+    "company_name": "Vietnam Power Solutions JSC",
+    "contact_name": "Nguyen Van Hai",
+    "email": "hai.nguyen@vps-power.example.com",
+    "country": "Vietnam",
+    "website": "https://vps-power.example.com",
+    "scenario": "sample_confirm",
+    "notes": "越南电力项目承包商，需要阻燃和低烟无卤样品"
+  },
+  {
+    "source": "sample_cable",
+    "industry": "cable",
+    "company_name": "Electra Cables Pty Ltd",
+    "contact_name": "Sarah Mitchell",
+    "email": "s.mitchell@electracables.example.com",
+    "country": "Australia",
+    "website": "https://electracables.example.com",
+    "scenario": "order_modify",
+    "notes": "澳洲分销商，常要求分批交货和改交期"
+  },
+  {
+    "source": "sample_cable",
+    "industry": "cable",
+    "company_name": "Al-Fanar Electric & Electronics",
+    "contact_name": "Omar Al-Rashid",
+    "email": "omar@alfanar.example.com",
+    "country": "Saudi Arabia",
+    "website": "https://alfanar.example.com",
+    "scenario": "price_negotiation",
+    "notes": "中东大型承包商，年采购量大，议价空间大"
+  },
+  {
+    "source": "sample_cable",
+    "industry": "cable",
+    "company_name": "Eletrocabos Brasil S.A.",
+    "contact_name": "Carlos Silva",
+    "email": "carlos.silva@eletrobras.example.com",
+    "country": "Brazil",
+    "website": "https://eletrobras.example.com",
+    "scenario": "claim_dispute",
+    "notes": "巴西客户，历史上对导体电阻和交货期敏感"
+  },
+  {
+    "source": "sample_cable",
+    "industry": "cable",
+    "company_name": "한국전력케이블(주)",
+    "contact_name": "Kim Min-jae",
+    "email": "minjae.kim@kepcocable.example.com",
+    "country": "South Korea",
+    "website": "https://kepcocable.example.com",
+    "scenario": "reconciliation",
+    "notes": "韩国电力系客户，对账和信用证流程严格"
+  },
+  {
+    "source": "sample_cable",
+    "industry": "cable",
+    "company_name": "Nairobi Electricals Ltd",
+    "contact_name": "Grace Otieno",
+    "email": "grace@nairobielec.example.com",
+    "country": "Kenya",
+    "website": "https://nairobielec.example.com",
+    "scenario": "sample_confirm",
+    "notes": "东非分销商，关注性价比和海运周期"
+  },
+  {
+    "source": "sample_cable",
+    "industry": "cable",
+    "company_name": "Dubai Cables & Accessories LLC",
+    "contact_name": "Ahmad Hassan",
+    "email": "ahmad@dubaicables.example.com",
+    "country": "UAE",
+    "website": "https://dubaicables.example.com",
+    "scenario": "price_negotiation",
+    "notes": "迪拜转口贸易商，需求弹性大"
+  },
+  {
+    "source": "sample_cable",
+    "industry": "cable",
+    "company_name": "Berlin Kabel GmbH",
+    "contact_name": "Laura Müller",
+    "email": "l.mueller@berlinkabel.example.com",
+    "country": "Germany",
+    "website": "https://berlinkabel.example.com",
+    "scenario": "sample_confirm",
+    "notes": "德国工业客户，重视 CE、RoHS 和 REACH 认证"
+  }
+]

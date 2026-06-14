@@ -14,9 +14,9 @@ from typing import Optional
 from pathlib import Path
 from datetime import datetime
 
-from ..config import PG_HOST, PG_PORT, PG_DB, PG_USER, PG_PASSWORD
-from ..models import Order, OrderState, OrderStatus, DialogueTurn, IntentSlot
-from ..auth import Org, User, AuthToken
+from .config import PG_HOST, PG_PORT, PG_DB, PG_USER, PG_PASSWORD
+from .models import Order, OrderState, OrderStatus, DialogueTurn, IntentSlot, Lead, LeadStatus
+from .auth import Org, User, AuthToken
 
 log = logging.getLogger("aiagent.storage.pg")
 
@@ -93,6 +93,32 @@ class PostgresStorage:
                 CREATE INDEX IF NOT EXISTS idx_proposals_order ON proposals(order_id);
                 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
                 CREATE INDEX IF NOT EXISTS idx_auth_tokens_user ON auth_tokens(user_id);
+
+                CREATE TABLE IF NOT EXISTS leads (
+                    id TEXT PRIMARY KEY,
+                    source TEXT DEFAULT 'manual',
+                    industry TEXT DEFAULT 'cable',
+                    company_name TEXT NOT NULL,
+                    contact_name TEXT,
+                    email TEXT NOT NULL,
+                    country TEXT,
+                    website TEXT,
+                    scenario TEXT DEFAULT 'sample_confirm',
+                    status TEXT DEFAULT 'new',
+                    last_email_subject TEXT,
+                    last_email_body TEXT,
+                    last_email_sent_at TIMESTAMPTZ,
+                    reply_summary TEXT,
+                    order_id TEXT,
+                    org_id TEXT,
+                    user_id TEXT,
+                    notes TEXT,
+                    created_at TIMESTAMPTZ NOT NULL,
+                    updated_at TIMESTAMPTZ NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
+                CREATE INDEX IF NOT EXISTS idx_leads_email ON leads(email);
+                CREATE INDEX IF NOT EXISTS idx_leads_org ON leads(org_id);
             """)
         log.info("PostgreSQL schema initialized")
 
@@ -298,6 +324,117 @@ class PostgresStorage:
             return await conn.fetchval(
                 "SELECT COUNT(*) FROM orders WHERE result_json::text LIKE '%evaluation%'"
             )
+
+    # === Outbound Sales Agent ===
+    async def create_lead(self, lead: Lead) -> None:
+        await self._ensure_pool()
+        async with self.pool.acquire() as conn:
+            await conn.execute(
+                """INSERT INTO leads (id, source, industry, company_name, contact_name, email,
+                   country, website, scenario, status, last_email_subject, last_email_body,
+                   last_email_sent_at, reply_summary, order_id, org_id, user_id, notes,
+                   created_at, updated_at)
+                   VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)""",
+                lead.id, lead.source, lead.industry, lead.company_name, lead.contact_name,
+                lead.email, lead.country, lead.website,
+                lead.status.value if hasattr(lead.status, "value") else lead.status,
+                lead.last_email_subject, lead.last_email_body, lead.last_email_sent_at,
+                lead.reply_summary, lead.order_id, lead.org_id, lead.user_id, lead.notes,
+                lead.created_at, lead.updated_at,
+            )
+
+    async def get_lead(self, lead_id: str) -> Lead | None:
+        await self._ensure_pool()
+        async with self.pool.acquire() as conn:
+            row = await conn.fetchrow("SELECT * FROM leads WHERE id=$1", lead_id)
+            if not row:
+                return None
+            return self._row_to_lead(dict(row))
+
+    async def get_lead_by_email(self, email: str, org_id: str | None = None) -> Lead | None:
+        await self._ensure_pool()
+        async with self.pool.acquire() as conn:
+            if org_id:
+                row = await conn.fetchrow(
+                    "SELECT * FROM leads WHERE email=$1 AND org_id=$2", email, org_id
+                )
+            else:
+                row = await conn.fetchrow("SELECT * FROM leads WHERE email=$1", email)
+            if not row:
+                return None
+            return self._row_to_lead(dict(row))
+
+    async def update_lead(self, lead: Lead) -> None:
+        await self._ensure_pool()
+        async with self.pool.acquire() as conn:
+            await conn.execute(
+                """UPDATE leads SET status=$1, last_email_subject=$2, last_email_body=$3,
+                   last_email_sent_at=$4, reply_summary=$5, order_id=$6, notes=$7, updated_at=$8
+                   WHERE id=$9""",
+                lead.status.value if hasattr(lead.status, "value") else lead.status,
+                lead.last_email_subject, lead.last_email_body, lead.last_email_sent_at,
+                lead.reply_summary, lead.order_id, lead.notes, lead.updated_at, lead.id,
+            )
+
+    async def list_leads(
+        self, status: str | None = None, limit: int = 100, org_id: str | None = None
+    ) -> list[Lead]:
+        await self._ensure_pool()
+        async with self.pool.acquire() as conn:
+            where: list[str] = []
+            params: list[object] = []
+            idx = 1
+            if status:
+                where.append(f"status=${idx}")
+                params.append(status)
+                idx += 1
+            if org_id:
+                where.append(f"org_id=${idx}")
+                params.append(org_id)
+                idx += 1
+            query = "SELECT * FROM leads"
+            if where:
+                query += " WHERE " + " AND ".join(where)
+            query += f" ORDER BY updated_at DESC LIMIT ${idx}"
+            params.append(limit)
+            rows = await conn.fetch(query, *params)
+            return [self._row_to_lead(dict(r)) for r in rows]
+
+    async def count_leads_by_status(self, org_id: str | None = None) -> dict:
+        await self._ensure_pool()
+        async with self.pool.acquire() as conn:
+            if org_id:
+                rows = await conn.fetch(
+                    "SELECT status, COUNT(*) AS n FROM leads WHERE org_id=$1 GROUP BY status", org_id
+                )
+            else:
+                rows = await conn.fetch("SELECT status, COUNT(*) AS n FROM leads GROUP BY status")
+            return {r["status"]: r["n"] for r in rows}
+
+    @staticmethod
+    def _row_to_lead(row: dict) -> Lead:
+        return Lead(
+            id=row["id"],
+            source=row.get("source"),
+            industry=row.get("industry"),
+            company_name=row["company_name"],
+            contact_name=row.get("contact_name"),
+            email=row["email"],
+            country=row.get("country"),
+            website=row.get("website"),
+            scenario=row.get("scenario"),
+            status=LeadStatus(row["status"]),
+            last_email_subject=row.get("last_email_subject"),
+            last_email_body=row.get("last_email_body"),
+            last_email_sent_at=row.get("last_email_sent_at"),
+            reply_summary=row.get("reply_summary"),
+            order_id=row.get("order_id"),
+            org_id=row.get("org_id"),
+            user_id=row.get("user_id"),
+            notes=row.get("notes"),
+            created_at=row["created_at"],
+            updated_at=row["updated_at"],
+        )
 
     @staticmethod
     def _row_to_order(row: dict) -> Order:

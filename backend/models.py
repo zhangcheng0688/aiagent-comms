@@ -106,3 +106,63 @@ class NegotiationProposal(BaseModel):
     summary: str  # 中文简述：原房型已满，升级到豪华房加价 ¥280/晚
     options: list[dict]  # [{option_id, label, price_change, key_changes, risk}]
     deadline_minutes: int = 30
+
+
+# =============================================================================
+# Outbound Sales Agent 模型
+# =============================================================================
+class LeadStatus(str, Enum):
+    NEW = "new"
+    CONTACTED = "contacted"
+    REPLIED = "replied"
+    QUALIFIED = "qualified"
+    ORDER_CREATED = "order_created"
+    UNSUBSCRIBED = "unsubscribed"
+    DRAFT = "draft"
+
+
+class Lead(BaseModel):
+    """ outbound 销售线索。"""
+    id: str
+    source: str = "manual"          # 来源：sample / linkedin / customs / manual
+    industry: str = "cable"         # 当前 MVP 默认 cable
+    company_name: str
+    contact_name: str | None = None
+    email: str
+    country: str | None = None
+    website: str | None = None
+    scenario: str = "sample_confirm"  # 预计触达场景
+    status: LeadStatus = LeadStatus.NEW
+    last_email_subject: str | None = None
+    last_email_body: str | None = None
+    last_email_sent_at: datetime | None = None
+    reply_summary: str | None = None
+    order_id: str | None = None
+    org_id: str | None = None       # A2: 归属组织
+    user_id: str | None = None      # A2: 创建人
+    notes: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class LeadCreate(BaseModel):
+    """新增线索请求。"""
+    source: str = "manual"
+    industry: str = "cable"
+    company_name: str
+    contact_name: str | None = None
+    email: str
+    country: str | None = None
+    website: str | None = None
+    scenario: str = "sample_confirm"
+    notes: str | None = None
+
+
+class OutreachResult(BaseModel):
+    """单次触达结果。"""
+    lead_id: str
+    sent: bool
+    subject: str
+    body: str
+    mode: Literal["real", "draft", "mock"]
+    error: str | None = None

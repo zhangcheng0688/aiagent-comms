@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Outbound 拓客 Agent · aiagent-comms</title>
+  <link rel="stylesheet" href="/static/css/design-system.css" />
+  <style>
+    .container { max-width: 1200px; margin: 0 auto; padding: var(--space-6); }
+    h1 { font-size: var(--text-2xl); margin-bottom: var(--space-2); }
+    .toolbar { display: flex; gap: var(--space-3); margin-bottom: var(--space-6); flex-wrap: wrap; }
+    .funnel { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6); }
+    .funnel-item { text-align: center; }
+    .funnel-item .num { font-size: var(--text-3xl); font-weight: 600; }
+    .funnel-item .label { color: var(--muted); font-size: var(--text-sm); }
+    table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+    th, td { padding: var(--space-3); border-bottom: 1px solid var(--line); text-align: left; }
+    th { color: var(--muted); font-weight: 500; }
+    .actions { display: flex; gap: var(--space-2); }
+    .toast { position: fixed; bottom: 24px; right: 24px; padding: var(--space-3) var(--space-5); background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--radius-lg); display: none; }
+    .toast.show { display: block; }
+    .email-preview { white-space: pre-wrap; background: var(--panel-2); padding: var(--space-4); border-radius: var(--radius); max-height: 300px; overflow: auto; font-size: var(--text-sm); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 Outbound 拓客 Agent（cable）</h1>
+    <p class="text-muted">本地示例线索 → LLM 生成开发信 → SMTP 发送 → 解析回复 → 自动建单</p>
+
+    <div class="toolbar">
+      <button class="btn btn-primary" onclick="importLeads()">导入示例线索</button>
+      <button class="btn" onclick="loadLeads()">刷新列表</button>
+      <button class="btn" onclick="loadFunnel()">刷新漏斗</button>
+    </div>
+
+    <div class="card funnel" id="funnel">
+      <div class="funnel-item"><div class="num" id="f-total">-</div><div class="label">总线索</div></div>
+      <div class="funnel-item"><div class="num" id="f-new">-</div><div class="label">新增</div></div>
+      <div class="funnel-item"><div class="num" id="f-contacted">-</div><div class="label">已触达</div></div>
+      <div class="funnel-item"><div class="num" id="f-replied">-</div><div class="label">已回复</div></div>
+      <div class="funnel-item"><div class="num" id="f-order_created">-</div><div class="label">已建单</div></div>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>公司</th>
+            <th>联系人</th>
+            <th>国家</th>
+            <th>场景</th>
+            <th>状态</th>
+            <th>最近邮件</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="lead-table"><tr><td colspan="7" class="text-muted">点击“刷新列表”加载</td></tr></tbody>
+      </table>
+    </div>
+
+    <div id="preview-modal" class="card" style="margin-top: var(--space-6); display: none;">
+      <h3>邮件预览 / 结果</h3>
+      <div id="preview-content" class="email-preview"></div>
+      <button class="btn" style="margin-top: var(--space-3)" onclick="document.getElementById('preview-modal').style.display='none'">关闭</button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const API = '/api';
+
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2500);
+    }
+
+    async function importLeads() {
+      const r = await fetch(`${API}/leads/import`, { method: 'POST' });
+      const data = await r.json();
+      toast(`导入 ${data.created} 条，跳过 ${data.skipped} 条`);
+      loadLeads();
+      loadFunnel();
+    }
+
+    async function loadFunnel() {
+      const r = await fetch(`${API}/leads/funnel`);
+      const data = await r.json();
+      document.getElementById('f-total').textContent = data.total;
+      const by = data.by_status || {};
+      ['new','contacted','replied','order_created'].forEach(s => {
+        document.getElementById('f-' + s).textContent = by[s] || 0;
+      });
+    }
+
+    function statusPill(status) {
+      const map = {
+        new: 'pending',
+        contacted: 'in_progress',
+        replied: 'in_progress',
+        qualified: 'in_progress',
+        order_created: 'success',
+        unsubscribed: 'failed',
+        draft: 'pending',
+      };
+      return `<span class="status-pill ${map[status] || 'pending'}">${status}</span>`;
+    }
+
+    async function loadLeads() {
+      const r = await fetch(`${API}/leads?limit=100`);
+      const leads = await r.json();
+      const tbody = document.getElementById('lead-table');
+      if (!leads.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-muted">暂无线索，请先导入</td></tr>';
+        return;
+      }
+      tbody.innerHTML = leads.map(l => `
+        <tr>
+          <td><b>${l.company_name}</b><br><span class="text-muted">${l.email}</span></td>
+          <td>${l.contact_name || '-'}</td>
+          <td>${l.country || '-'}</td>
+          <td>${l.scenario}</td>
+          <td>${statusPill(l.status)}</td>
+          <td>${l.last_email_subject || '-'}</td>
+          <td class="actions">
+            <button class="btn" onclick="outreach('${l.id}', true)">预览邮件</button>
+            <button class="btn btn-primary" onclick="outreach('${l.id}', false)">发送</button>
+            <button class="btn" onclick="simulateReply('${l.id}')">模拟回复</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function outreach(leadId, dryRun) {
+      const r = await fetch(`${API}/leads/${leadId}/outreach`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dry_run: dryRun })
+      });
+      const data = await r.json();
+      const modal = document.getElementById('preview-modal');
+      const content = document.getElementById('preview-content');
+      content.innerHTML = `<b>模式：</b>${data.mode} &nbsp; <b>发送状态：</b>${data.sent}<br><b>主题：</b>${data.subject}<hr>${data.body.replace(/\n/g, '<br>')}`;
+      if (data.error) content.innerHTML += `<br><br><span class="text-err">错误：${data.error}</span>`;
+      modal.style.display = 'block';
+      toast(dryRun ? '已生成预览' : `发送结果：${data.mode}`);
+      loadLeads();
+      loadFunnel();
+    }
+
+    async function simulateReply(leadId) {
+      const body = prompt("输入模拟回复内容：", "Please send me a sample of XLPE 4mm² cable. We need 1.5m for lab testing.") || "";
+      if (!body) return;
+      const r = await fetch(`${API}/leads/${leadId}/simulate-reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject: 'Re: Cable sample', body })
+      });
+      const data = await r.json();
+      toast(data.handled ? `分类：${data.category} / ${data.summary}` : '未处理：' + data.reason);
+      loadLeads();
+      loadFunnel();
+    }
+
+    loadFunnel();
+  </script>
+</body>
+</html>

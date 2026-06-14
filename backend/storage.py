@@ -5,7 +5,10 @@ import aiosqlite
 from datetime import datetime
 from pathlib import Path
 from .config import DB_PATH
-from .models import Order, OrderState, OrderStatus, DialogueTurn, IntentSlot, OrderResult
+from .models import (
+    Order, OrderState, OrderStatus, DialogueTurn, IntentSlot, OrderResult,
+    Lead, LeadStatus,
+)
 from .auth import Org, User, AuthToken
 
 SCHEMA = """
@@ -69,6 +72,32 @@ CREATE INDEX IF NOT EXISTS idx_orders_org ON orders(org_id);
 CREATE INDEX IF NOT EXISTS idx_proposals_order ON proposals(order_id);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_auth_tokens_user ON auth_tokens(user_id);
+
+CREATE TABLE IF NOT EXISTS leads (
+    id TEXT PRIMARY KEY,
+    source TEXT DEFAULT 'manual',
+    industry TEXT DEFAULT 'cable',
+    company_name TEXT NOT NULL,
+    contact_name TEXT,
+    email TEXT NOT NULL,
+    country TEXT,
+    website TEXT,
+    scenario TEXT DEFAULT 'sample_confirm',
+    status TEXT DEFAULT 'new',
+    last_email_subject TEXT,
+    last_email_body TEXT,
+    last_email_sent_at TEXT,
+    reply_summary TEXT,
+    order_id TEXT,
+    org_id TEXT,
+    user_id TEXT,
+    notes TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
+CREATE INDEX IF NOT EXISTS idx_leads_email ON leads(email);
+CREATE INDEX IF NOT EXISTS idx_leads_org ON leads(org_id);
 """
 
 
@@ -343,6 +372,127 @@ class Storage:
             org_id=row["org_id"] if "org_id" in row.keys() else None,
             user_id=row["user_id"] if "user_id" in row.keys() else None,
             user_email=row["user_email"] if "user_email" in row.keys() else None,
+            created_at=datetime.fromisoformat(row["created_at"]),
+            updated_at=datetime.fromisoformat(row["updated_at"]),
+        )
+
+    # === Outbound Sales Agent ===
+    async def create_lead(self, lead: Lead) -> None:
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute(
+                """INSERT INTO leads (id, source, industry, company_name, contact_name, email,
+                   country, website, scenario, status, last_email_subject, last_email_body,
+                   last_email_sent_at, reply_summary, order_id, org_id, user_id, notes,
+                   created_at, updated_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    lead.id, lead.source, lead.industry, lead.company_name, lead.contact_name,
+                    lead.email, lead.country, lead.website, lead.scenario,
+                    lead.status.value if hasattr(lead.status, "value") else lead.status,
+                    lead.last_email_subject, lead.last_email_body,
+                    lead.last_email_sent_at.isoformat() if lead.last_email_sent_at else None,
+                    lead.reply_summary, lead.order_id, lead.org_id, lead.user_id, lead.notes,
+                    lead.created_at.isoformat(), lead.updated_at.isoformat(),
+                ),
+            )
+            await db.commit()
+
+    async def get_lead(self, lead_id: str) -> Lead | None:
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute("SELECT * FROM leads WHERE id = ?", (lead_id,)) as cursor:
+                row = await cursor.fetchone()
+                if not row:
+                    return None
+                return self._row_to_lead(row)
+
+    async def get_lead_by_email(self, email: str, org_id: str | None = None) -> Lead | None:
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            if org_id:
+                async with db.execute(
+                    "SELECT * FROM leads WHERE email = ? AND org_id = ?", (email, org_id)
+                ) as cursor:
+                    row = await cursor.fetchone()
+            else:
+                async with db.execute("SELECT * FROM leads WHERE email = ?", (email,)) as cursor:
+                    row = await cursor.fetchone()
+            if not row:
+                return None
+            return self._row_to_lead(row)
+
+    async def update_lead(self, lead: Lead) -> None:
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute(
+                """UPDATE leads SET status=?, last_email_subject=?, last_email_body=?,
+                   last_email_sent_at=?, reply_summary=?, order_id=?, notes=?, updated_at=?
+                   WHERE id=?""",
+                (
+                    lead.status.value if hasattr(lead.status, "value") else lead.status,
+                    lead.last_email_subject, lead.last_email_body,
+                    lead.last_email_sent_at.isoformat() if lead.last_email_sent_at else None,
+                    lead.reply_summary, lead.order_id, lead.notes,
+                    lead.updated_at.isoformat(), lead.id,
+                ),
+            )
+            await db.commit()
+
+    async def list_leads(
+        self, status: str | None = None, limit: int = 100, org_id: str | None = None
+    ) -> list[Lead]:
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            params: list = []
+            where = []
+            if status:
+                where.append("status = ?")
+                params.append(status)
+            if org_id:
+                where.append("org_id = ?")
+                params.append(org_id)
+            query = "SELECT * FROM leads"
+            if where:
+                query += " WHERE " + " AND ".join(where)
+            query += " ORDER BY updated_at DESC LIMIT ?"
+            params.append(limit)
+            async with db.execute(query, params) as cursor:
+                rows = await cursor.fetchall()
+            return [self._row_to_lead(r) for r in rows]
+
+    async def count_leads_by_status(self, org_id: str | None = None) -> dict:
+        async with aiosqlite.connect(self.db_path) as db:
+            if org_id:
+                async with db.execute(
+                    "SELECT status, COUNT(*) FROM leads WHERE org_id=? GROUP BY status", (org_id,)
+                ) as cur:
+                    rows = await cur.fetchall()
+            else:
+                async with db.execute("SELECT status, COUNT(*) FROM leads GROUP BY status") as cur:
+                    rows = await cur.fetchall()
+            return {r[0]: r[1] for r in rows}
+
+    @staticmethod
+    def _row_to_lead(row) -> Lead:
+        return Lead(
+            id=row["id"],
+            source=row["source"],
+            industry=row["industry"],
+            company_name=row["company_name"],
+            contact_name=row["contact_name"],
+            email=row["email"],
+            country=row["country"],
+            website=row["website"],
+            scenario=row["scenario"],
+            status=LeadStatus(row["status"]),
+            last_email_subject=row["last_email_subject"],
+            last_email_body=row["last_email_body"],
+            last_email_sent_at=datetime.fromisoformat(row["last_email_sent_at"])
+            if row["last_email_sent_at"] else None,
+            reply_summary=row["reply_summary"],
+            order_id=row["order_id"],
+            org_id=row["org_id"],
+            user_id=row["user_id"],
+            notes=row["notes"],
             created_at=datetime.fromisoformat(row["created_at"]),
             updated_at=datetime.fromisoformat(row["updated_at"]),
         )
