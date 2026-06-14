@@ -289,6 +289,23 @@ async def _run_order_in_background(order_id: str):
         await ws_manager.broadcast(order_id, WSEvent.status_changed(order_id, "failed"))
 
 
+async def _evaluate_order_v2(order_id: str):
+    """后台：单独跑 V2.1 评估（供 Celery worker 调用）。"""
+    order = await storage.get_order(order_id)
+    if not order:
+        return
+    try:
+        score = await evaluate_order(order)
+        result = dict(order.result or {})
+        result["evaluation"] = score_to_dict(score)
+        order.result = result
+        await storage.update_order(order)
+        log.info(f"order.evaluated id={order_id} total={score.total} engine={score.engine}")
+        await ws_manager.broadcast(order_id, WSEvent.evaluation_ready(order_id, score_to_dict(score)))
+    except Exception as e:
+        log.warning(f"order.evaluate_failed id={order_id} err={e}")
+
+
 @app.get("/api/orders/{order_id}")
 async def get_order(order_id: str, auth: tuple[User, Org] | None = Depends(optional_user)):
     order = await storage.get_order(order_id)

@@ -62,8 +62,8 @@ if get_celery_app() is not None:
     def run_order_task(self, order_id: str):
         """Celery worker 跑订单。"""
         import asyncio
-        from .main import _run_order_in_background_v2
-        return asyncio.run(_run_order_in_background_v2(order_id))
+        from .main import _run_order_in_background
+        return asyncio.run(_run_order_in_background(order_id))
 
     @app.task(bind=True, name="aiagent.evaluate_order")
     def evaluate_order_task(self, order_id: str):
