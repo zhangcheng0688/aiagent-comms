@@ -6,11 +6,9 @@ V3.0：支持行业词库（cable/machinery/textile/logistics）。
 """
 from __future__ import annotations
 import json
-import os
 import re
 import uuid
-import httpx
-from ..config import LLM_API_BASE, LLM_API_KEY, LLM_MODEL
+from ..llm_client import call_mavis_llm, extract_json_from_text
 from ..models import IntentSlot, OrderCreate
 from ..domains import get_domain_loader
 
@@ -84,34 +82,25 @@ async def parse_intent(
         if industry_block:
             user_prompt += f"\n\n{industry_block}"
 
-        async with httpx.AsyncClient(timeout=30) as client:
-            resp = await client.post(
-                f"{LLM_API_BASE}/chat/completions",
-                headers={"Authorization": f"Bearer {LLM_API_KEY}"},
-                json={
-                    "model": LLM_MODEL,
-                    "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "temperature": 0.1,
-                },
-            )
-            resp.raise_for_status()
-            content = resp.json()["choices"][0]["message"]["content"].strip()
-            content = re.sub(r"^```(?:json)?\s*|\s*```$", "", content, flags=re.MULTILINE).strip()
-            data = json.loads(content)
-            if isinstance(data, list):
-                for item in data:
-                    if not isinstance(item, dict):
-                        continue
-                    intents.append(IntentSlot(
-                        slot_id=item.get("slot_id") or f"slot_{uuid.uuid4().hex[:6]}",
-                        type=item.get("type", "info"),
-                        description=item.get("description", ""),
-                        target_value=item.get("target_value"),
-                        priority=item.get("priority", 1),
-                    ))
+        content = await call_mavis_llm(
+            system=SYSTEM_PROMPT,
+            user=user_prompt,
+            temperature=0.1,
+        )
+        data = extract_json_from_text(content or "")
+        if isinstance(data, list):
+            for item in data:
+                if not isinstance(item, dict):
+                    continue
+                intents.append(IntentSlot(
+                    slot_id=item.get("slot_id") or f"slot_{uuid.uuid4().hex[:6]}",
+                    type=item.get("type", "info"),
+                    description=item.get("description", ""),
+                    target_value=item.get("target_value"),
+                    priority=item.get("priority", 1),
+                ))
+        if not intents:
+            intents = _offline_parse(requirement, constraints, scenario)
     except Exception:
         intents = _offline_parse(requirement, constraints, scenario)
 

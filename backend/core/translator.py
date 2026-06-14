@@ -2,7 +2,8 @@
 from __future__ import annotations
 import httpx
 import re
-from ..config import LLM_API_BASE, LLM_API_KEY, LLM_MODEL, DEEPL_API_KEY, TRANSLATION_PROVIDER
+from ..llm_client import call_mavis_llm
+from ..config import DEEPL_API_KEY, TRANSLATION_PROVIDER
 
 LANG_CODE = {
     "en": "EN-US",
@@ -57,22 +58,10 @@ Source language: {source}. Target language: {target}.
 {rule}
 Only return the translated text, no explanations, no quotes."""
     try:
-        async with httpx.AsyncClient(timeout=20) as client:
-            resp = await client.post(
-                f"{LLM_API_BASE}/chat/completions",
-                headers={"Authorization": f"Bearer {LLM_API_KEY}"},
-                json={
-                    "model": LLM_MODEL,
-                    "messages": [
-                        {"role": "system", "content": system},
-                        {"role": "user", "content": text},
-                    ],
-                    "temperature": 0.1,
-                },
-            )
-            resp.raise_for_status()
-            out = resp.json()["choices"][0]["message"]["content"].strip()
-            return _strip_quotes(out)
+        out = await call_mavis_llm(system=system, user=text, temperature=0.1)
+        if not out:
+            return text
+        return _strip_quotes(out)
     except Exception:
         return text  # 终极兜底：原文
 

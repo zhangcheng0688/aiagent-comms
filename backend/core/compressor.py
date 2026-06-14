@@ -8,15 +8,11 @@
 两段拼起来当 context。
 """
 from __future__ import annotations
-import asyncio
 import logging
-import os
 import re
 from typing import List
 
-import httpx
-
-from ..config import LLM_API_BASE, LLM_API_KEY, LLM_MODEL
+from ..llm_client import call_mavis_llm
 
 log = logging.getLogger("aiagent.compress")
 
@@ -41,62 +37,28 @@ async def compress_dialogue(dialogue: list[dict], scenario: str = "hotel") -> st
     if len(raw) < 200:
         return ""
 
-    # 启发式 fallback（无 LLM 时）
-    if not (LLM_API_KEY and LLM_API_KEY != "sk-xxx") and not os.getenv("MAVIS_ACCESS_TOKEN"):
-        return _heuristic_compress(dialogue, scenario)
-
-    # 调 LLM 压缩
+    # 调 LLM 压缩（无 token 时 call_mavis_llm 返回 None，自然走启发式）
     try:
-        return await _llm_compress(raw, scenario)
+        compressed = await _llm_compress(raw, scenario)
+        if compressed:
+            return compressed
     except Exception as e:
         log.warning(f"llm compress failed, fall back heuristic: {e}")
-        return _heuristic_compress(dialogue, scenario)
+    return _heuristic_compress(dialogue, scenario)
 
 
-async def _llm_compress(raw_text: str, scenario: str) -> str:
+async def _llm_compress(raw_text: str, scenario: str) -> str | None:
     """调 M3 压缩对话。"""
-    prompt = f"""你是一个外贸助理 AI 的"对话压缩器"。把下面这段冗长的电话/短信沟通历史压缩成 200-300 字中文摘要。
+    system = """你是一个外贸助理 AI 的"对话压缩器"。把下面这段冗长的电话/短信沟通历史压缩成 200-300 字中文摘要。
 
 要求：
 1. 保留关键事实：商家名、报价、关键诉求、约束
 2. 用第三人称（"客户"指客户，"AI"指自己，"商家"指对方）
 3. 突出"哪些已经谈妥、哪些还在争、商家态度如何"
 4. 不复述废话（"好的"、"嗯"、"OK"）
-5. 用陈述句，避免问句
-
-场景：{scenario}
-
-对话历史：
-{raw_text}
-
-压缩后的摘要："""
-    # 直接调 LLM（复用已有 llm_client）
-    import httpx
-    headers = {"Content-Type": "application/json"}
-    if os.getenv("MAVIS_ACCESS_TOKEN"):
-        headers["Token"] = os.environ["MAVIS_ACCESS_TOKEN"]
-    elif LLM_API_KEY and LLM_API_KEY != "sk-xxx":
-        headers["Authorization"] = f"Bearer {LLM_API_KEY}"
-
-    body = {
-        "model": LLM_MODEL,
-        "max_tokens": 400,
-        "temperature": 0.2,
-        "messages": [{"role": "user", "content": prompt}],
-    }
-    try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            r = await client.post(f"{LLM_API_BASE}/messages", headers=headers, json=body)
-            r.raise_for_status()
-            data = r.json()
-            return data["content"][0]["text"].strip()
-    except Exception:
-        # 退路：OpenAI 兼容格式
-        async with httpx.AsyncClient(timeout=30) as client:
-            r = await client.post(f"{LLM_API_BASE}/chat/completions", headers=headers, json=body)
-            r.raise_for_status()
-            data = r.json()
-            return data["choices"][0]["message"]["content"].strip()
+5. 用陈述句，避免问句"""
+    user = f"场景：{scenario}\n\n对话历史：\n{raw_text}\n\n压缩后的摘要："
+    return await call_mavis_llm(system=system, user=user, max_tokens=400, temperature=0.2)
 
 
 def _heuristic_compress(dialogue: list[dict], scenario: str) -> str:
